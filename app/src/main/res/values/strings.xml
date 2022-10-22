@@ -1,0 +1,104 @@
+<resources>
+
+    <string name="fileFormat">yyyy-MM-dd</string>
+
+    <string name="activity_main_menu_title">Apps to Firewall</string>
+
+    <string name="activity_main_menu_apps_system">View System Apps</string>
+    <string name="activity_main_menu_apps_toggle">Allow/Block All</string>
+    <string name="activity_main_menu_apps_user">View User Apps</string>
+    <string name="activity_main_menu_apps_sort">Sort View</string>
+
+    <string name="activity_main_menu_zero">Zero Stats</string>
+    <string name="activity_main_menu_notifications">Notifications</string>
+    <string name="activity_main_menu_boot">Firewall on Boot</string>
+    <string name="activity_main_menu_restart">Firewall Restart</string>
+    <string name="activity_main_menu_subnet">Allow Local:&#160;</string>
+    <string name="activity_main_menu_logs">View Logs</string>
+    <string name="activity_main_menu_stats">View Data Usage</string>
+    <string name="activity_main_menu_help">Help</string>
+    <string name="activity_main_menu_refresh">Refresh Apps</string>
+    <string name="activity_main_menu_always">Always on...</string>
+
+    <string name="activity_logs_menu_traffic_logs">Traffic Logs</string>
+    <string name="activity_logs_menu_view_blocked">View Blocked</string>
+    <string name="activity_logs_menu_view_allowed">View Allowed</string>
+    <string name="activity_logs_menu_clear_logs">Clear Logs</string>
+    <string name="activity_logs_menu_detailed">Detailed Logs</string>
+    <string name="activity_logs_menu_copy_logs">Copy Logs</string>
+    <string name="activity_logs_menu_share_logs">Share Logs</string>
+    <string name="activity_logs_menu_log_level">Set Log Level</string>
+    <string name="activity_logs_menu_refresh">Refresh</string>
+
+    <string name="log_level_set">Select Logging Level</string>
+    <string name="log_level_message1">New log level will take affect from now.</string>
+    <string name="log_level_message2" formatted="false">Setting log level to %s will produce a lot of logging and decrease performance.</string>
+
+    <string name="sort_option_set">Select sorting option</string>
+
+    <string name="dialog_warning">Warning!</string>
+    <string name="dialog_info">Info!</string>
+    <string name="dialog_blockAll">Block All</string>
+    <string name="dialog_allowAll">Allow All</string>
+    <string name="dialog_toggleAll">Allow/Block All Apps</string>
+    <string name="dialog_toggleAll_message">To block or allow all user apps select the appropriate button below.</string>
+    <string name="dialog_toggleAll_message_system">To block or allow all system apps select the appropriate button below.</string>
+    <string name="dialog_subnet">Allow A Local Subnet</string>
+    <string name="dialog_subnet_message">To allow traffic to a subnet even from blocked apps enter the subnet below:</string>
+    <string name="dialog_subnet_message2">(This is designed for a trusted local subnet. If you do not know what you are doing, do not enable this option and press Clear to exit!)</string>
+    <string name="dialog_allow">Allow</string>
+    <string name="dialog_clear">Clear</string>
+
+    <string name="filter_text">Enter text to filter</string>
+
+    <string name="apps_loading">Loading App Info %d\n\n(Only apps with Internet access will be displayed)</string>
+    <string name="app_disabled">App is disabled! Enable to see app information.</string>
+    <string name="app_unknown">Cannot find app!</string>
+
+    <string name="enable_firewall">Enable Firewall</string>
+    <string name="enable_firewall_message">This will enable the Firewall and deny Internet access to any applications you have specified.\n\nProceed?</string>
+
+    <string name="disable_firewall">Disable Firewall</string>
+    <string name="disable_firewall_message">This will disable the Firewall. All applications will be able to access the Internet.\n\nProceed?</string>
+
+    <string name="firewall_start_part1">Firewall OFF. Press</string>
+    <string name="firewall_start_part2">to turn ON.</string>
+
+    <string name="notfity_deny" formatted="false">Data from %s blocked</string>
+    <string name="notfity_blocked">Data blocked by firewall</string>
+    <string name="notify_firewall_start">Firewall started</string>
+    <string name="notify_firewall_fail1">Cannot start Firewall! Please try again...</string>
+    <string name="notify_firewall_fail2" formatted="false">Cannot start Firewall: %s</string>
+    <string name="notify_firewall_fail3">Cannot start Firewall on boot! Start manually...</string>
+    <string name="notify_firewall_fail4">Cannot start Firewall after termination! Start manually...</string>
+    <string name="notify_firewall_stopped">Firewall stopped!</string>
+    <string name="notify_firewall_terminated">Firewall terminated! Enable "Firewall Restart" under options for auto restart.</string>
+    <string name="notify_firewall_restart">Firewall terminated! But restarting. This prevents any other Firewall or VPN working on your phone. To stop this behaviour, disable "Firewall Restart" under options.</string>
+    <string name="notify_firewall_block_all">Your version of Android does not support per app blocking.\n\nBlocking all Apps!</string>
+
+    <string name="app_data_boot" formatted="false">Data since boot:</string>
+    <string name="app_data_boot_up" formatted="false">%s</string>
+    <string name="app_data_boot_down" formatted="false">%s</string>
+
+    <string name="app_data_date_string0">Firewall not active</string>
+    <string name="app_data_date_string1">No data since firewall active</string>
+    <string name="app_data_date_string2">No data since rule change</string>
+    <string name="app_data_date_string3">Data:</string>
+    <string name="app_data_date_string4">Data Blocked:</string>
+    <string name="app_data_date_string5">Data Local:</string>
+    <string name="app_data_date_string6">Android 10: See Data Usage</string>
+    <string name="LoadingApps">Loading App List</string>
+    <string name="blocked">Blocked:</string>
+    <string name="allowed">Allowed:</string>
+    <string name="cleared">Log Cleared</string>
+    <string name="timeFormat">%H:%M %a %d %b</string>
+
+    <string name="BuildingApps">Building App List</string>
+    <string name="InfoLoadingApps">Only apps with Internet access will be displayed</string>
+
+
+    <string-array name="number_array">
+        <item>255</item>
+        <item>0</item>
+    </string-array>
+</resources>

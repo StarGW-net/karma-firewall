@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:paddingLeft="0dp"
+	android:paddingTop="10dp">
+
+	<TextView
+		android:id="@+id/activity_logs_row_date"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:paddingLeft="4dp"
+		android:paddingTop="0dp"
+		android:paddingBottom="0dp"
+		android:text="date"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:textColor="#FFEB3B"></TextView>
+
+	<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/activity_logs_row_text"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:text="text"
+		android:paddingLeft="4dp"
+		android:paddingTop="0dp"
+		android:paddingBottom="0dp"
+		android:textColor="@android:color/white">
+	</TextView>
+
+	</LinearLayout>

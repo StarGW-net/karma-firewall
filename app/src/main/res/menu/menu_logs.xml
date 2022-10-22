@@ -1,0 +1,48 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".ActivityMain">
+    <item android:id="@+id/action_view"
+        android:title="@string/activity_logs_menu_view_allowed"
+        android:orderInCategory="100"  />
+    <item android:id="@+id/action_logging_level"
+        android:title="@string/log_level_set"
+        android:orderInCategory="100">
+        <menu>
+            <group android:id="@+id/group"
+                android:checkableBehavior="single">
+                <item android:id="@+id/action_none"
+                    android:title="0"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_normal"
+                    android:title="1"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_detailed"
+                    android:title="2"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_debug"
+                    android:title="3"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_insane"
+                    android:title="4"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_adb"
+                    android:title="5"
+                    android:orderInCategory="100"/>
+            </group>
+        </menu>
+    </item>
+    <item android:id="@+id/action_email"
+        android:title="@string/activity_logs_menu_copy_logs"
+        android:visible="false"
+        android:orderInCategory="100"  />
+    <item android:id="@+id/action_share"
+        android:title="@string/activity_logs_menu_share_logs"
+        android:orderInCategory="100"  />
+    <item android:id="@+id/action_clear"
+        android:title="@string/activity_logs_menu_clear_logs"
+        android:orderInCategory="100" />
+        android:orderInCategory="100" />
+    <item android:id="@+id/action_refresh2"
+        android:title="@string/activity_logs_menu_refresh"
+        android:orderInCategory="100" />
+</menu>

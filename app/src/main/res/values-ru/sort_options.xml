@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Приложения A-Z</item>
+        <item>Разрешить приложениям A-Z</item>
+        <item>Запретить приложениям A-Z</item>
+        <item>Приложения по последним данным</item>
+        <item>Разрешить приложениям по последним данным</item>
+        <item>Запретить приложения по заблокированным данным</item>
+    </string-array>
+
+</resources>

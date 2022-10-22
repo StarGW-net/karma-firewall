@@ -1,0 +1,20 @@
+<resources>
+
+    <color name="core_grey_95">#121212</color>
+    <color name="corbflowerblue">#6495ed</color>
+
+    <style name="SWTheme" parent="Theme.AppCompat">
+        <item name="android:statusBarColor">@color/core_grey_95</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/core_grey_95</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowBackground">@color/core_grey_95</item>
+        <item name="android:dialogTheme">@style/SWDialog</item>
+    </style>
+
+    <style name="SWDialog" parent="android:Theme.Holo.Dialog">
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+
+</resources>

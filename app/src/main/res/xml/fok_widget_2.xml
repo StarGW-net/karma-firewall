@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/fok_widget2_layout"
+    android:minHeight="40dp"
+    android:minWidth="40dp"
+    android:updatePeriodMillis="600000"
+    android:configure="net.stargw.fok.FOKWidget2Configure"
+    android:previewImage="@drawable/widget2_preview" >
+</appwidget-provider>

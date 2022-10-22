@@ -1,0 +1,88 @@
+<resources>
+	<string name="fileFormat">yyyy-MM-dd</string>
+	<string name="activity_main_menu_title">Alkalmazások</string>
+	<string name="activity_main_menu_apps_system">Rendszer alkalmazások</string>
+	<string name="activity_main_menu_apps_toggle">Összes Engedélyezése/Letiltása</string>
+	<string name="activity_main_menu_apps_user">Felhasználói alkalmazások</string>
+	<string name="activity_main_menu_apps_sort">Rendezés</string>
+	<string name="activity_main_menu_zero">Nulla statisztika</string>
+	<string name="activity_main_menu_notifications">Értesítések</string>
+	<string name="activity_main_menu_boot">Tűzfal indulás bootoláskor</string>
+	<string name="activity_main_menu_restart">Tűzfal újraindítása</string>
+	<string name="activity_main_menu_subnet">Alhálózat engedély: </string>
+	<string name="activity_main_menu_logs">Napló megnézése</string>
+	<string name="activity_main_menu_stats">Adat használat megnézése</string>
+	<string name="activity_main_menu_help">Súgó</string>
+	<string name="activity_main_menu_refresh">Alkalmazások frissítése</string>
+	<string name="activity_main_menu_always">Mindig Bekapcsolva...</string>
+	<string name="activity_logs_menu_traffic_logs">Forgalom napló</string>
+	<string name="activity_logs_menu_view_blocked">Letiltott megnézése</string>
+	<string name="activity_logs_menu_view_allowed">Engedélyezett megnézése</string>
+	<string name="activity_logs_menu_clear_logs">Napló törlése</string>
+	<string name="activity_logs_menu_detailed">Részletes napló</string>
+	<string name="activity_logs_menu_copy_logs">Napló másolása</string>
+	<string name="activity_logs_menu_share_logs">Share Logs</string>
+	<string name="activity_logs_menu_log_level">Naplózás szint beállítása</string>
+	<string name="activity_logs_menu_refresh">Frissítés</string>
+	<string name="log_level_set">Naplózás szint kiválasztása</string>
+	<string name="log_level_message1">Az új naplószint mostantól alkalmazva.</string>
+	<string name="log_level_message2" formatted="false">A naplószint beállítása erre:%s, több naplózást okoz és csökkenti a teljesítményt.</string>
+	<string name="sort_option_set">Rendezés kiválasztása</string>
+	<string name="dialog_warning">Figyelem!</string>
+	<string name="dialog_info">Információ!</string>
+	<string name="dialog_blockAll">Összes letiltása</string>
+	<string name="dialog_allowAll">Összes engedélyezése</string>
+	<string name="dialog_toggleAll">Összes Engedélyezése/Letiltása</string>
+	<string name="dialog_toggleAll_message">Az összes felhasználói alkalmazás blokkolásához vagy engedélyezéséhez válassza ki a megfelelő gombot.</string>
+	<string name="dialog_toggleAll_message_system">Az összes rendszer alkalmazás blokkolásához vagy engedélyezéséhez válassza ki a megfelelő gombot.</string>
+	<string name="dialog_subnet">Helyi alhálózat engedélyezése</string>
+	<string name="dialog_subnet_message">Ahhoz, hogy a blokkolt alkalmazásokból származó alhálózathoz tartozó forgalmat is megadhassa, adja meg az alábbi alhálózatot:</string>
+	<string name="dialog_subnet_message2">(Ez egy megbízható helyi alhálózathoz készült. Ha nem tudja, hogy mit csinál, ne engedélyezze ezt a lehetőséget, és a kilépéshez nyomja meg a Törlés gombot!)</string>
+	<string name="dialog_allow">Engedélyezés</string>
+	<string name="dialog_clear">Törlés</string>
+	<string name="filter_text">Írja be a szöveget a szűréshez</string>
+	<string name="apps_loading">Alkalmazás info betöltése %d\n\n(Csak az internet hozzáféréssel rendelkező alkalmazások jelennek meg)</string>
+	<string name="app_disabled">Az alkalmazás le van tiltva! Engedélyezéshez nézze meg az alkalmazás információkat.</string>
+	<string name="app_unknown">Az alkalmazás nem található!</string>
+	<string name="enable_firewall">Tűzfal engedélyezése</string>
+	<string name="enable_firewall_message">Ezzel engedélyezheti a tűzfalat, és megtagadhatja a megadott alkalmazásoknak az internet hozzáférést.\n\nFolytatja?</string>
+	<string name="disable_firewall">Tűzfal letiltása</string>
+	<string name="disable_firewall_message">Ez letiltja a tűzfalat. Az összes alkalmazás eléri az internetet.\n\nFolytatja?</string>
+	<string name="firewall_start_part1">Kikapcsolva.</string>
+	<string name="firewall_start_part2">bekapcsolja.</string>
+	<string name="notfity_deny" formatted="false">%s adatforgalma blokkolva</string>
+	<string name="notfity_blocked">Az adatforgalmat blokkolta a tűzfal</string>
+	<string name="notify_firewall_start">A tűzfal elindult</string>
+	<string name="notify_firewall_fail1">A tűzfal nem tudott elindulni! Kérjük próbálja meg újra...</string>
+	<string name="notify_firewall_fail2" formatted="false">A tűzfal nem tudott elindulni: %s</string>
+	<string name="notify_firewall_fail3">A tűzfal nem tudott elindulni bootoláskor. Indítsa el kézzel...</string>
+	<string name="notify_firewall_fail4">A tűzfal elindítása a befejezést követően nem lehetséges! Indítsa el kézzel...</string>
+	<string name="notify_firewall_stopped">A tűzfal leállt!</string>
+	<string name="notify_firewall_terminated">A tűzfal leállt! Engedélyezze az "Tűzfal újraindítása" opciót a beállításokban.</string>
+	<string name="notify_firewall_restart">A tűzfal leállt! De újraindult. Ez megakadályozza, hogy más tűzfal vagy VPN működjön a telefonon. Ezt a viselkedést leállíthatja, ha a beállításokban letiltja a "Tűzfal újraindítása" opciót.</string>
+	<string name="notify_firewall_block_all">Az Android verziója nem támogatja az alkalmazásonkénti blokkolást.\n\nAz összes alkalmazást blokkolja!</string>
+	<string name="app_data_boot" formatted="false">A rendszerindítás óta az adatforgalom:</string>
+	<string name="app_data_boot_up" formatted="false">%s</string>
+	<string name="app_data_boot_down" formatted="false">%s</string>
+	<string name="app_data_date_string0">A tűzfal nem aktív.</string>
+	<string name="app_data_date_string1">Nincs adatforgalom a tűzfal aktiválása óta</string>
+	<string name="app_data_date_string2">Nincs adatforgalom a szabály aktiválása óta</string>
+	<string name="app_data_date_string3">Adat:</string>
+	<string name="app_data_date_string4">Blokkolt adat:</string>
+	<string name="app_data_date_string5">Helyi adat:</string>
+	<string name="app_data_date_string6">Android 10: Adat használat megnézése</string>
+
+	<string name="LoadingApps">Alkalmazás lista betöltése</string>
+	<string name="blocked">Blokkolt:</string>
+	<string name="allowed">Engedélyezett:</string>
+	<string name="cleared">Napló törölve</string>
+    <string name="timeFormat">%H:%M %Y.%m.%d</string>
+
+	<string name="BuildingApps">Alkalmazás lista létrehozása</string>
+	<string name="InfoLoadingApps">Csak az internet hozzáféréssel rendelkező alkalmazások jelennek meg</string>
+
+	<string-array name="number_array">
+		<item>255</item>
+		<item>0</item>
+	</string-array>
+</resources>

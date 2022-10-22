@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Apps A-Z</item>
+        <item>Allow Apps A-Z</item>
+        <item>Deny Apps A-Z</item>
+        <item>Apps by last data</item>
+        <item>Allow Apps by last data</item>
+        <item>Deny Apps by blocked data</item>
+    </string-array>
+
+</resources>

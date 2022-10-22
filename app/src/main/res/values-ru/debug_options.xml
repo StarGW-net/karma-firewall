@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string-array name="logLevels">
+		<item>Нормальный</item>
+		<item>Подробный</item>
+		<item>Отладка</item>
+	</string-array>
+	
+</resources>

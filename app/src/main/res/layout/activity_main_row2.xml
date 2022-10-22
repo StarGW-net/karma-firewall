@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="0dp"
+    android:layout_marginLeft="0dp"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/activity_main_row_app_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="0dp"
+            android:paddingLeft="0dp"
+            android:src="@drawable/cpu"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:orientation="horizontal"
+            android:layout_toRightOf="@+id/activity_main_row_app_icon"
+            android:layout_toLeftOf="@+id/activity_main_row_fwstate_icon"
+            android:layout_marginLeft="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/activity_main_row_app_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="some long text here"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/white"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:maxLines="1"/>
+
+                <TextView
+                    android:id="@+id/activity_main_row_app_traffic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:text="Description"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/activity_main_row_fwstate_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/fw_app_on" />
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:id="@+id/activity_main_row_app_expand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:paddingLeft="5dp"
+        android:visibility="visible">
+
+        // Container for multiple package names
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/activity_main_row_app_expand_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingRight="10dp">
+
+        </LinearLayout>
+
+            <TextView
+                android:id="@+id/activity_main_row_app_uid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="UID: "
+                android:textColor="@android:color/white" />
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

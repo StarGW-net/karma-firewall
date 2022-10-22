@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    
+<LinearLayout 
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:minWidth="600dp"
+	android:orientation="vertical" >
+
+				
+<LinearLayout 
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginLeft="20dp"
+	android:layout_marginRight="20dp"
+	android:orientation="vertical" >
+
+		<TextView
+			android:id="@+id/confirmMessageSubnet"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="10dp"
+			android:layout_marginBottom="20dp"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		
+		</LinearLayout>
+
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="20dp"
+		android:layout_marginRight="20dp"
+		android:orientation="horizontal"
+		android:gravity="center_horizontal">
+
+		<EditText
+			android:id="@+id/subnet1"
+			android:inputType="number"
+			android:maxLength="3"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFffffff"
+			android:text="."
+			android:textSize="40sp"
+			android:visibility="visible"
+			android:gravity="center_horizontal">
+		</TextView>
+
+		<EditText
+			android:id="@+id/subnet2"
+			android:inputType="number"
+			android:digits="0123456789"
+			android:maxLength="3"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFffffff"
+			android:text="."
+			android:textSize="40sp"
+			android:visibility="visible"
+			android:gravity="center_horizontal">
+		</TextView>
+
+		<EditText
+			android:id="@+id/subnet3"
+			android:inputType="number"
+			android:digits="0123456789"
+			android:maxLength="3"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFffffff"
+			android:text="."
+			android:textSize="40sp"
+			android:visibility="visible"
+			android:gravity="center_horizontal">
+		</TextView>
+
+		<EditText
+			android:id="@+id/subnet4"
+			android:inputType="number"
+			android:digits="0123456789"
+			android:maxLength="3"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#FFffffff"
+			android:text="/"
+			android:textSize="20sp"
+			android:visibility="visible"
+			android:gravity="center_horizontal">
+		</TextView>
+
+		<EditText
+			android:id="@+id/subnetMask"
+			android:inputType="number"
+			android:digits="0123456789"
+			android:maxLength="2"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+
+			</LinearLayout>
+
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="20dp"
+		android:layout_marginRight="20dp"
+		android:orientation="vertical" >
+
+		<TextView
+			android:id="@+id/confirmMessageSubnet2"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="10dp"
+			android:layout_marginBottom="20dp"
+			android:text="@string/dialog_subnet_message2"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:textStyle="normal|italic" />
+
+
+	</LinearLayout>
+
+	<View
+		android:layout_width="fill_parent"
+		android:layout_height="1dip"
+		android:background="?android:attr/dividerHorizontal" />
+
+<LinearLayout 
+    style="?android:attr/buttonBarStyle"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="0dip"
+    android:paddingLeft="2dip"
+    android:paddingRight="2dip"
+    android:measureWithLargestChild="true">
+			
+
+		
+    <Button 
+        android:id="@+id/subnetAllowButton"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/dialog_allow"/>
+
+	<Button
+		android:id="@+id/subnetClearButton"
+		style="?android:attr/buttonBarButtonStyle"
+		android:layout_width="0dip"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:text="@string/dialog_clear"/>
+
+    <Button 
+        android:id="@+id/subnetCancelButton"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@android:string/cancel"/>
+
+</LinearLayout>
+	</LinearLayout>
+
+</ScrollView>
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Alkalmazások A-Z</item>
+        <item>Engedélyezettek A-Z</item>
+        <item>Letiltottak A-Z</item>
+        <item>Utolsó adatforgalom</item>
+        <item>Engedélyezett utolsó adat</item>
+        <item>Letiltott blokkolt adat</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,105 @@
+<resources>
+
+    <string name="fileFormat">yyyy-MM-dd</string>
+
+    <string name="activity_main_menu_title">брандмауэра</string>
+
+    <string name="activity_main_menu_apps_system">Показать системные приложения</string>
+    <string name="activity_main_menu_apps_toggle">Разрешить/Блокировать все</string>
+    <string name="activity_main_menu_apps_user">Показать пользовательские приложения</string>
+    <string name="activity_main_menu_apps_sort">Сортировать</string>
+
+    <string name="activity_main_menu_zero">Нулевая статистика</string>
+    <string name="activity_main_menu_notifications">Уведомления</string>
+    <string name="activity_main_menu_boot">Запуск при включении</string>
+    <string name="activity_main_menu_restart">Перезапустить брандмауэр</string>
+    <string name="activity_main_menu_subnet">Разрешить локально:&#160;</string>
+    <string name="activity_main_menu_logs">Показать журнал</string>
+    <string name="activity_main_menu_stats">Показать использование трафика</string>
+    <string name="activity_main_menu_help">Помощь</string>
+    <string name="activity_main_menu_refresh">Обновить список приложений</string>
+
+    <string name="activity_logs_menu_traffic_logs">Журнал трафика</string>
+    <string name="activity_logs_menu_view_blocked">Показать заблокированные</string>
+    <string name="activity_logs_menu_view_allowed">Показать допущенные</string>
+    <string name="activity_logs_menu_clear_logs">Очистить журнал</string>
+    <string name="activity_logs_menu_detailed">Показать подробный журнал</string>
+    <string name="activity_logs_menu_copy_logs">Копировать записи журнала</string>
+    <string name="activity_logs_menu_share_logs">Share Logs</string>
+    <string name="activity_logs_menu_log_level">Настроить уровень журналирования</string>
+    <string name="activity_logs_menu_refresh">Обновить</string>
+    <string name="activity_main_menu_always">всегда включен...</string>
+
+    <string name="log_level_set">Выберите уровень журналирования</string>
+    <string name="log_level_message1">Новые настройки уровня журналирования сейчас вступят в силу.</string>
+    <string name="log_level_message2" formatted="false">Установка уровня журналирования в процентах приведёт к большому количеству записей в журнале и уменьшит производительность.</string>
+
+    <string name="sort_option_set">Выберите способ сортировки</string>
+
+    <string name="dialog_warning">Внимание!</string>
+    <string name="dialog_info">Сведение!</string>
+    <string name="dialog_blockAll">Блокировать все</string>
+    <string name="dialog_allowAll">Разрешить все</string>
+    <string name="dialog_toggleAll">Разрешить/Блокировать для всех приложений</string>
+    <string name="dialog_toggleAll_message">Чтобы заблокировать или разрешить доступ для всех пользовательских приложений, нажмите соответствующую кнопку ниже.</string>
+    <string name="dialog_toggleAll_message_system">Чтобы заблокировать или разрешить доступ для всех системных приложений, нажмите соответствующую кнопку ниже.</string>
+    <string name="dialog_subnet">Разрешить доступ в локальную подсеть</string>
+    <string name="dialog_subnet_message">Чтобы разрешить трафик в подсеть даже из заблокированных приложений, введите адрес подсети ниже:</string>
+    <string name="dialog_subnet_message2">(Данная функция разработана для доверенной локальной подсети. Если вы не знаете, что делаете, не включайте эту функцию и нажмите «Очистить» для выхода!)</string>
+    <string name="dialog_allow">Разрешить</string>
+    <string name="dialog_clear">Очистить</string>
+
+    <string name="filter_text">Введите текст для поиска</string>
+
+    <string name="apps_loading">Загружаеться информация о приложениях %d\n\n(Будут отображены только приложения у которых есть доступ в интернет)</string>
+    <string name="app_disabled">Приложение отключено! Включите приложение, чтобы увидеть информацию о нём.</string>
+    <string name="app_unknown">Не удаеться найти приложение!</string>
+
+    <string name="enable_firewall">Включить брандмауэр</string>
+    <string name="enable_firewall_message">Данная функция активирует брандмауэр и запрещает доступ в Интернет для тех приложений, которые вы указали.\n\nПродолжить?</string>
+
+    <string name="disable_firewall">Отключить брандмауэр</string>
+    <string name="disable_firewall_message">Данная функция отключит брандмауэр. Всем приложениям будет открыт доступ в интернет.\n\nПродолжить?</string>
+
+    <string name="firewall_start_part1">Брандмауэр откл. Нажмите</string>
+    <string name="firewall_start_part2">чтобы вкл.</string>
+
+    <string name="notfity_deny" formatted="false">Данные из %s блокированы</string>
+    <string name="notfity_blocked">Передача данных блокированна брандмауэром</string>
+    <string name="notify_firewall_start">Брандмауэр запущен</string>
+    <string name="notify_firewall_fail1">Не удалось запустить брандмауэр! Пожалуйста попробуйте ещё раз...</string>
+    <string name="notify_firewall_fail2" formatted="false">Не удалось запустить брандмауэр: %s</string>
+    <string name="notify_firewall_fail3">Не удалось запустить брандмауэр при включении! Запустите его вручную...Невозможно запустить брандмауэр при включении! Запустить </string>
+    <string name="notify_firewall_fail4">Не удается запустить брандмауэр после отключения! Запустите его вручную...</string>
+    <string name="notify_firewall_stopped">Брандмауэр отключен!</string>
+    <string name="notify_firewall_terminated">Работа брандмауэра прекращена! Включите «Перезапуск брандмауэра» под опциями для автоматического перезапуска.</string>
+    <string name="notify_firewall_restart">Работа брандмауэра прекращена, но он перезагружается. Данная функция предотвращает работу любого другого брандмауэра или VPN на вашем телефоне. Чтобы прекратить подобное поведение, отключите «Перезапуск брандмауэра» под опциями.</string>
+    <string name="notify_firewall_block_all">Ваша версия Android не поддерживает блокировку приложений.\n\nБлокировка всех приложений!</string>
+
+    <string name="app_data_boot" formatted="false">Данные с момента включения:</string>
+    <string name="app_data_boot_up" formatted="false">%s</string>
+    <string name="app_data_boot_down" formatted="false">%s</string>
+
+    <string name="app_data_date_string0">Брандмауэр не активен</string>
+    <string name="app_data_date_string1">Нет переданых данных, с тех пор как брандмауэр активен</string>
+    <string name="app_data_date_string2">Нет переданных данных, с момента изменения правил</string>
+    <string name="app_data_date_string3">Данные:</string>
+    <string name="app_data_date_string4">Блокированные данные:</string>
+    <string name="app_data_date_string5">Локальные данные:</string>
+    <string name="app_data_date_string6">Android 10: See Data Usage</string>
+
+    <string name="LoadingApps">Загрузка списка приложений</string>
+    <string name="blocked">Блокировано:</string>
+    <string name="allowed">Разрешено:</string>
+    <string name="cleared">Журнал очищен</string>
+    <string name="timeFormat">%H:%M %a %d %b</string>
+
+    <string name="BuildingApps">Построение списка приложений</string>
+    <string name="InfoLoadingApps">Будут отображены только приложения у которых есть доступ в интернет</string>
+
+
+    <string-array name="number_array">
+        <item>255</item>
+        <item>0</item>
+    </string-array>
+</resources>

@@ -1,0 +1,105 @@
+<resources>
+
+    <string name="fileFormat">yyyy-MM-dd</string>
+
+    <string name="activity_main_menu_title">Додатки брандмауера</string>
+
+    <string name="activity_main_menu_apps_system">Показати системні додатки</string>
+    <string name="activity_main_menu_apps_toggle">Дозволити/Блокувати всі</string>
+    <string name="activity_main_menu_apps_user">Показати користувацькі додатки</string>
+    <string name="activity_main_menu_apps_sort">Сортувати</string>
+
+    <string name="activity_main_menu_zero">Нулева статистика</string>
+    <string name="activity_main_menu_notifications">Повідомлення</string>
+    <string name="activity_main_menu_boot">Запуск при увімкненні</string>
+    <string name="activity_main_menu_restart">Перезапустити брандмауер</string>
+    <string name="activity_main_menu_subnet">Дозволити локально:&#160;</string>
+    <string name="activity_main_menu_logs">Показати журнал</string>
+    <string name="activity_main_menu_stats">Показати використання трафіку</string>
+    <string name="activity_main_menu_help">Допомога</string>
+    <string name="activity_main_menu_refresh">Оновити список додатків</string>
+
+    <string name="activity_logs_menu_traffic_logs">Журнал трафіку</string>
+    <string name="activity_logs_menu_view_blocked">Показати заблоковані</string>
+    <string name="activity_logs_menu_view_allowed">Показати допущені</string>
+    <string name="activity_logs_menu_clear_logs">Очистити журнал</string>
+    <string name="activity_logs_menu_detailed">Показати детальний журнал</string>
+    <string name="activity_logs_menu_copy_logs">Копіювати записи журналу</string>
+    <string name="activity_logs_menu_share_logs">Share Logs</string>
+    <string name="activity_logs_menu_log_level">Налаштувати рівень журналювання</string>
+    <string name="activity_logs_menu_refresh">Оновити</string>
+
+    <string name="log_level_set">Выберіть рівень журналювання</string>
+    <string name="log_level_message1">Нові налаштування рівня журналювання зараз вступлять в силу.</string>
+    <string name="log_level_message2" formatted="false">Встановлення рівня журналювання у відсотках приведе до створення великої кількості записів у журналі і зменшить продуктивність.</string>
+
+    <string name="sort_option_set">Оберіть спосіб сортування</string>
+
+    <string name="dialog_warning">Увага!</string>
+    <string name="dialog_info">Повідомлення!</string>
+    <string name="dialog_blockAll">Блокувати всі</string>
+    <string name="dialog_allowAll">Дозволити всі</string>
+    <string name="dialog_toggleAll">Дозволити/Блокувати для всіх додатків</string>
+    <string name="dialog_toggleAll_message">Щоб заблокувати або дозволити доступ для всіх користувацьких додатків, натисніть відповідну кнопку нище.</string>
+    <string name="dialog_toggleAll_message_system">Щоб заблокувати або дозволити доступ для всіх системних додатків, натисніть відповідну кнопку нище.</string>
+    <string name="dialog_subnet">Дозволити доступ у локальну підмережу</string>
+    <string name="dialog_subnet_message">Щоб дозволити трафік у підмережу навіть із заблокованних додатків, введіть адресу підмережі нище:</string>
+    <string name="dialog_subnet_message2">(Дана функція розроблена для довіренної локальної підмережі. Якщо ви не знаєте що робите, не вмикайте цю функцію і натисніть «Очистити» для виходу!)</string>
+    <string name="dialog_allow">Дозволити</string>
+    <string name="dialog_clear">Очистити</string>
+
+    <string name="filter_text">Введіть текст для пошуку</string>
+
+    <string name="apps_loading">Завантажується інформація про додатки %d\n\n(Будуть відображені тільки додатки у яких є доступ до мережі Інтернет)</string>
+    <string name="app_disabled">Додаток вимкнено! Увімкніть додаток, щоб побачити всю інформацію про нього.</string>
+    <string name="app_unknown">Не вдається знайти додаток!</string>
+
+    <string name="enable_firewall">Увімкнути брандмауер</string>
+    <string name="enable_firewall_message">Дана функція активує брандмауер и забороняє доступ до Інтернету для тих додатків, які ви вказали.\n\nПродовжити?</string>
+
+    <string name="disable_firewall">Вимкнути брандмауер</string>
+    <string name="disable_firewall_message">Дана функція вимкне брандмауер. Всім додаткам буде відкрито доступ до мережі Інтернет.\n\nПродовжити?</string>
+
+    <string name="firewall_start_part1">Брандмауер вимк. Натисніть</string>
+    <string name="firewall_start_part2">щоб увімк.</string>
+
+    <string name="notfity_deny" formatted="false">Дані з %s блоковані</string>
+    <string name="notfity_blocked">Передача данних блокована брандмауером</string>
+    <string name="notify_firewall_start">Брандмауер увімкнено</string>
+    <string name="notify_firewall_fail1">Не вдалося увімкнути брандмауер! Будь-даска спробуйте ще раз...</string>
+    <string name="notify_firewall_fail2" formatted="false">Не вдалося увімкнути брандмауер: %s</string>
+    <string name="notify_firewall_fail3">Не вдалося запустити брандмауер при увімкненні! Запустіть його вручну...Неможливо запустити брандмауер при увімкненні! Запустити</string>
+    <string name="notify_firewall_fail4">Не вдається запустити брандмауер після вимкнення! Запустити його вручну...</string>
+    <string name="notify_firewall_stopped">Брандмауер вимкнено!</string>
+    <string name="notify_firewall_terminated">Робота брандмауера припинена! Увімкніть «Перезапуск брандмауера» під опціями для автоматичного перезапуску.</string>
+    <string name="notify_firewall_restart">Робота брандмауера припинена, але він перезапускається. Дана функція запобігає діям будь-якого іншого брандмауера або VPN на вашому телефоні. Щоб припинити подібну поведінку, вимкніть функцію «Перезапуск брандмауера» під опціями.</string>
+    <string name="notify_firewall_block_all">Ваша версія Android не підтримує блокування додатків.\n\nБлокування всіх додатків!</string>
+
+    <string name="app_data_boot" formatted="false">Дані з моменту ввімкнення:</string>
+    <string name="app_data_boot_up" formatted="false">%s</string>
+    <string name="app_data_boot_down" formatted="false">%s</string>
+
+    <string name="app_data_date_string0">Брандмауер не активний</string>
+    <string name="app_data_date_string1">Немає переданих даних, відтоді як брандмауер активовано</string>
+    <string name="app_data_date_string2">Немає переданих даних, з моменту змінення правил</string>
+    <string name="app_data_date_string3">Дані:</string>
+    <string name="app_data_date_string4">Блоковані дані:</string>
+    <string name="app_data_date_string5">Локальні дані:</string>
+    <string name="app_data_date_string6">Android 10: See Data Usage</string>
+    <string name="activity_main_menu_always">завжди...</string>
+
+    <string name="LoadingApps">Завантаження списку додатків</string>
+    <string name="blocked">Блоковано:</string>
+    <string name="allowed">Дозволено:</string>
+    <string name="cleared">Журнал очищено</string>
+    <string name="timeFormat">%H:%M %a %d %b</string>
+
+    <string name="BuildingApps">Побудова списку додатків</string>
+    <string name="InfoLoadingApps">Будуть відображенні тільки додатки у котрих є доступ до мережі Інтернет</string>
+
+
+    <string-array name="number_array">
+        <item>255</item>
+        <item>0</item>
+    </string-array>
+</resources>

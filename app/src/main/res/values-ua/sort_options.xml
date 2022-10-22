@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Додатки A-Z</item>
+        <item>Дозволити додаткам A-Z</item>
+        <item>Заборонити додаткам A-Z</item>
+        <item>Додатки по останнім данним</item>
+        <item>Дозволити додаткам по останнім даним</item>
+        <item>Заборонити додаткам по заблокованним даним</item>
+    </string-array>
+
+</resources>

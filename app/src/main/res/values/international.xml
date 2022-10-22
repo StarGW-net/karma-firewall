@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources   xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+
+    <string name="package_name">net.stargw.fok</string>
+    <string name="app_name">Karma FW</string>
+
+    <string formatted="false" name="up_msg">%7.1f %s&#9650;</string>
+    <string formatted="false" name="up_msg_bytes">%d %s&#9650;</string>
+
+    <string formatted="false" name="down_msg">%7.1f %s&#9660;</string>
+    <string formatted="false" name="down_msg_bytes">%d %s&#9650;</string>
+
+</resources>

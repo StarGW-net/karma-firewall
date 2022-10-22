@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".ActivityMain">
+    <item android:id="@+id/action_apps_system"
+        android:title="@string/activity_main_menu_apps_system"
+        android:orderInCategory="100"  />
+    <item android:id="@+id/action_refresh"
+        android:title="@string/activity_main_menu_refresh" />
+</menu>
