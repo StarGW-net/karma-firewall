@@ -1,1 +1,1 @@
-Karma Firewall app lets you take control back of your phone and block internet traffic to and from specific apps.
+Karma Firewall blocks apps from accessing the Internet
