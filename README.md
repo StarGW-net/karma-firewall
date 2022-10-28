@@ -8,4 +8,6 @@ After a number of years I gave up enhancing and supporting Karma Firewall on Goo
  • Google updating SDK API too often
  • Google Play compliance burdens
 
-It is now available on F-Droid
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/net.stargw.fok/)
