@@ -537,6 +537,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     case R.id.action_help:
                         showHelp();
                         return true;
+                    case R.id.action_donate:
+                        showDonate();
+                        return true;
                     case R.id.action_apps_sort:
                         sortOptionPickerDropdown();
                         return true;
@@ -746,6 +749,22 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         startActivity(i);
 
     }
+
+    //
+    // Display the help screen
+    //
+    private void showDonate()
+    {
+
+        String appName = getString(R.string.app_name);
+
+        String url = "https://www.stargw.net/android/donate.html?app=" + appName;
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+
+    }
+
 
     private void enterSubnet()
     {

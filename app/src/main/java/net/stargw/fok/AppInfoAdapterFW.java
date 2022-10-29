@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -34,6 +35,8 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
     Context mContext;
 
+    PackageManager pManager;
+
     public AppInfoAdapterFW(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
 
@@ -41,6 +44,7 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
         mContext = context;
 
+        pManager = mContext.getPackageManager();
     }
 
 
@@ -189,6 +193,9 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         text1.setText(apps.name);
         // text1.setText(apps.name + " (" + apps.UID2 +")");
         // text2.setText(apps.packageName);
+
+        // Load icons once on the fly
+        Global.getIcon(pManager,apps);
         icon.setImageDrawable(apps.icon);
 
         // tog.setChecked(apps.kill);
@@ -207,6 +214,13 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
         final int pos = position;
         tog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.changeSelectedItem(pos);
+            }
+        });
+
+        text1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.changeSelectedItem(pos);

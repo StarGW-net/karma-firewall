@@ -17,6 +17,7 @@
     <string name="activity_main_menu_logs">Показать журнал</string>
     <string name="activity_main_menu_stats">Показать использование трафика</string>
     <string name="activity_main_menu_help">Помощь</string>
+    <string name="activity_main_menu_donate">Пожертвовать</string>
     <string name="activity_main_menu_refresh">Обновить список приложений</string>
 
     <string name="activity_logs_menu_traffic_logs">Журнал трафика</string>

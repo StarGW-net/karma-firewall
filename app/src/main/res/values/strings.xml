@@ -17,6 +17,7 @@
     <string name="activity_main_menu_logs">View Logs</string>
     <string name="activity_main_menu_stats">View Data Usage</string>
     <string name="activity_main_menu_help">Help</string>
+    <string name="activity_main_menu_donate">Donate</string>
     <string name="activity_main_menu_refresh">Refresh Apps</string>
     <string name="activity_main_menu_always">Always on...</string>
 
