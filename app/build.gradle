@@ -7,8 +7,8 @@ android {
         applicationId "net.stargw.fok"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 53
-        versionName "53"
+        versionCode 54
+        versionName "54"
     }
     buildTypes {
         release {
@@ -16,6 +16,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'net.stargw.fok'
 }
 
 dependencies {

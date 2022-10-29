@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -34,12 +35,17 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
 
     Context mContext;
 
+    PackageManager pManager;
+
     public AppInfoAdapterApps(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
 
         listener = (FOKWidget2Configure) context;
 
         mContext = context;
+
+
+        pManager = mContext.getPackageManager();
 
     }
 
@@ -96,6 +102,9 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         text1.setText(apps.name);
         // text1.setText(apps.name + " (" + apps.UID2 +")");
         // text2.setText(apps.packageName);
+
+        // Load icons once on the fly
+        Global.getIcon(pManager,apps);
         icon.setImageDrawable(apps.icon);
 
         // tog.setChecked(apps.kill);

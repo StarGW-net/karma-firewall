@@ -408,13 +408,15 @@ public class Global extends Application {
 		app.system = Global.checkOverride(packageInfo.packageName, app.system);
 
 
-
+/*
 		try {
 			app.icon = pManager.getApplicationIcon(packageName);
 		} catch (Exception e) {
 			app.icon = getContext().getResources().getDrawable(R.drawable.android);
 			Logs.myLog("Cannot get icon!", 3);
 		}
+*/
+		app.icon = null;
 
 		if ( (app.internet == true) && (app.enabled == true) )
 		{
@@ -426,7 +428,8 @@ public class Global extends Application {
 
 			} else {
 				appFW = new AppInfo();
-				appFW.icon = app.icon;
+				// appFW.icon = app.icon;
+				appFW.icon = null;
 				appFW.name = app.name;
 				appFW.date = 0;
 				/*
@@ -443,7 +446,7 @@ public class Global extends Application {
 			// How to handle removal of a system package with shared UID ???
 
 			if (appFW.packageNames == null) {
-				Logs.myLog("New UID, New package name " + packageName, 2 );
+				Logs.myLog("New UID, New package name " + packageName, 3 );
 				appFW.packageNames = new ArrayList<String>();
 				appFW.packageNames.add(packageName);
 				appFW.appNames = new ArrayList<String>();
@@ -468,7 +471,7 @@ public class Global extends Application {
 			}
 
 			if (appFW.packageNames.size() > 1) {
-				appFW.icon = getContext().getResources().getDrawable(R.drawable.android);
+				// appFW.icon = getContext().getResources().getDrawable(R.drawable.android);
 				appFW.name = "Apps (UID " + app.UID2 + ")";
 			}
 
@@ -519,5 +522,23 @@ public class Global extends Application {
 		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 		drawable.draw(canvas);
 		return bitmap;
+	}
+
+	public static void getIcon (PackageManager pManager, AppInfo apps)
+	{
+		if (apps.icon == null) {
+			// Logs.myLog("App get icon: " + apps.name, 1);
+
+			if (apps.packageNames.size() > 1) {
+				apps.icon = getContext().getResources().getDrawable(R.drawable.android);
+			} else {
+				try {
+					apps.icon = pManager.getApplicationIcon(apps.packageNames.get(0));
+				} catch (Exception e) {
+					apps.icon = getContext().getResources().getDrawable(R.drawable.android);
+					Logs.myLog("Cannot get icon: " + apps.name, 3);
+				}
+			}
+		}
 	}
 }
