@@ -10,4 +10,10 @@
         <item>Letiltott blokkolt adat</item>
     </string-array>
 
+    <string-array name="sortOptionsNew">
+        <item>Alkalmazások A-Z</item>
+        <item>Engedélyezettek A-Z</item>
+        <item>Letiltottak A-Z</item>
+    </string-array>
+
 </resources>

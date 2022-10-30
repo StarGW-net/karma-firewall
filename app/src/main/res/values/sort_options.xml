@@ -10,4 +10,9 @@
         <item>Deny Apps by blocked data</item>
     </string-array>
 
+    <string-array name="sortOptionsNew">
+        <item>Apps A-Z</item>
+        <item>Allow Apps A-Z</item>
+        <item>Deny Apps A-Z</item>
+    </string-array>
 </resources>

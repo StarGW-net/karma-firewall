@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+import android.Manifest;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
@@ -256,7 +257,6 @@ public class Global extends Application {
 		}
 
 		PackageInfo packageInfo;
-
 		List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
 
 		Global.packageMax = packageInfoList.size();
@@ -272,8 +272,11 @@ public class Global extends Application {
 				Logs.myLog("Cannot get package info...skipping", 3);
 				continue;
 			}
+
+
 			getAppDetail(packageInfo);
 			// Logs.myLog(id + "added: " + app.name + " " + appList.size(), 1);
+
 
 			Logs.myLog("-------------------", 3);
 
@@ -281,6 +284,8 @@ public class Global extends Application {
 			broadcastIntent.setAction(Global.APPS_LOADING_INTENT);
 			mContext.sendBroadcast(broadcastIntent);
 		}
+
+
 		Logs.myLog("Built an installed app list of: " +  Global.appListFW.size(), 2);
 
 
@@ -301,6 +306,7 @@ public class Global extends Application {
 			}
 		}
 
+
 		// Global.duplicateUIDs();
 		Global.packageDone = true;
 
@@ -310,6 +316,8 @@ public class Global extends Application {
 
 
 	public static void getAppDetail(PackageInfo packageInfo) {
+
+		long t1 = System.currentTimeMillis();
 
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 		int LoggingLevel = p.getInt("LoggingLevel",1);
@@ -335,7 +343,6 @@ public class Global extends Application {
 			} else {
 
 				for (String permission : packageInfo.requestedPermissions) {
-
 					if (TextUtils.equals(permission, android.Manifest.permission.INTERNET)) {
 						app.internet = true;
 						break;
@@ -353,12 +360,19 @@ public class Global extends Application {
 			}
 		}
 
+		if (app.internet == false)
+		{
+			// We are not interested in package
+			return;
+		}
+
 		app.name = pManager.getApplicationLabel(applicationInfo).toString();
 		if (app.name == null)
 		{
 			app.name = packageName;
 		}
 
+		/*
 		Configuration config = new Configuration();
 		config.locale = Resources.getSystem().getConfiguration().locale;
 		final Resources galleryRes;
@@ -373,6 +387,7 @@ public class Global extends Application {
 				Logs.myLog("Cannot get localised name: " + app.name, 3);
 			}
 		}
+		*/
 
 		app.enabled = applicationInfo.enabled;
 		app.UID2 = applicationInfo.uid; // change to a string??
@@ -397,6 +412,7 @@ public class Global extends Application {
 				e.printStackTrace();
 			}
 		}
+
 		// override system app if the app has a UID of 1000 or smaller
 		if (app.UID2 <= 1000)
 		{
@@ -406,7 +422,6 @@ public class Global extends Application {
 
 		// override
 		app.system = Global.checkOverride(packageInfo.packageName, app.system);
-
 
 /*
 		try {
@@ -467,6 +482,7 @@ public class Global extends Application {
 					// Logs.myLog("Existing UID, New package name " + packageName, 2 );
 					appFW.packageNames.add(packageName);
 					appFW.appNames.add(app.name); // CRASH HERE
+					// java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.util.ArrayList.add(java.lang.Object)' on a null object reference
 				}
 			}
 

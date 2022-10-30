@@ -1196,7 +1196,15 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(myContext);
 
-        final String options[] = myContext.getResources().getStringArray(R.array.sortOptions);
+        //         final String
+        String options[] = null;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+        {
+            options = myContext.getResources().getStringArray(R.array.sortOptions);
+        } else {
+            options = myContext.getResources().getStringArray(R.array.sortOptionsNew);
+
+        }
 
         builder.setTitle(myContext.getString(R.string.sort_option_set));
 

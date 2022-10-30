@@ -10,4 +10,10 @@
         <item>Заборонити додаткам по заблокованним даним</item>
     </string-array>
 
+    <string-array name="sortOptionsNew">
+        <item>Додатки A-Z</item>
+        <item>Дозволити додаткам A-Z</item>
+        <item>Заборонити додаткам A-Z</item>
+    </string-array>
+
 </resources>

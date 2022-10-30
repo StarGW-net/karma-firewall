@@ -398,7 +398,23 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                         // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
                             filteredItems.add(app);
                         }
-
+                        // Loop over package names...
+                        for(int i2 = 0; i2 < app.appNames.size(); i2++) {
+                            if( (app.appNames.get(i2).toString().toLowerCase().contains(constraint) ) ) {
+                                boolean newApp = true;
+                                for(int i4 = 0; i4 < filteredItems.size() ; i4++)
+                                {
+                                    if (filteredItems.get(i4).UID2 == app.UID2)
+                                    {
+                                        newApp = false;
+                                        break;
+                                    }
+                                }
+                                if (newApp == true) {
+                                    filteredItems.add(app); // miltiple??
+                                }
+                            }
+                        }
                     }
                     result.count = filteredItems.size();
                     result.values = filteredItems;
