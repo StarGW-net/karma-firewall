@@ -10,4 +10,10 @@
         <item>Запретить приложения по заблокированным данным</item>
     </string-array>
 
+    <string-array name="sortOptionsNew">
+        <item>Приложения A-Z</item>
+        <item>Разрешить приложениям A-Z</item>
+        <item>Запретить приложениям A-Z</item>
+    </string-array>
+
 </resources>
