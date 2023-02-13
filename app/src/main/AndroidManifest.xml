@@ -11,10 +11,10 @@
         android:roundIcon="@drawable/round"
         android:theme="@style/SWTheme"
 
-        android:name="net.stargw.fok.Global">
+        android:name="net.stargw.karma.Global">
 
         <activity
-            android:name="net.stargw.fok.ActivityMain"
+            android:name="net.stargw.karma.ActivityMain"
             android:label="@string/app_name"
             android:launchMode="singleTop">
 
@@ -25,14 +25,14 @@
         </activity>
 
         <activity
-            android:name="net.stargw.fok.ActivityLogs"
+            android:name="net.stargw.karma.ActivityLogs"
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:excludeFromRecents="true">
         </activity>
 
 
-        <receiver android:name="net.stargw.fok.BroadcastReceiverBoot">
+        <receiver android:name="net.stargw.karma.BroadcastReceiverBoot">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -42,7 +42,7 @@
         </receiver>
 
         <service
-            android:name="net.stargw.fok.FOKServiceFW"
+            android:name="net.stargw.karma.FOKServiceFW"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE">
@@ -52,7 +52,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name="net.stargw.fok.FOKWidget1Provider" >
+        <receiver android:name="net.stargw.karma.FOKWidget1Provider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -60,7 +60,7 @@
                 android:resource="@xml/fok_widget_1" />
         </receiver>
 
-        <receiver android:name="net.stargw.fok.FOKWidget2Provider"
+        <receiver android:name="net.stargw.karma.FOKWidget2Provider"
             android:label="Firewall App">
 
             <intent-filter>
@@ -70,7 +70,7 @@
                 android:resource="@xml/fok_widget_2" />
         </receiver>
 
-        <activity android:name="net.stargw.fok.FOKWidget2Configure">
+        <activity android:name="net.stargw.karma.FOKWidget2Configure">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
@@ -78,7 +78,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="net.stargw.fok.fileprovider"
+            android:authorities="net.stargw.karma.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
 

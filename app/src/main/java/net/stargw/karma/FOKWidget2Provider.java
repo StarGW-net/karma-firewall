@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -11,11 +11,10 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import static net.stargw.fok.Global.getContext;
+import static net.stargw.karma.Global.getContext;
 
 /**
  * Created by swatts on 11/02/18.

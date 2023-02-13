@@ -2,3 +2,9 @@
 .idea
 GRAPHICS
 /build
+*.iml
+/local.properties
+/app/build
+/app/debug
+/app/release
+

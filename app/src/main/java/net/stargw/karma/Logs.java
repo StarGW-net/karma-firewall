@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,11 +16,8 @@ import java.util.GregorianCalendar;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
-import android.os.StrictMode;
 import android.text.format.Time;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 

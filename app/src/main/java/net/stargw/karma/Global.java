@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import java.util.ArrayList;
 
@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-import android.Manifest;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
@@ -17,8 +16,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;

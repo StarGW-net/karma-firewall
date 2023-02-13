@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

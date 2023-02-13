@@ -4,6 +4,6 @@
     android:minHeight="40dp"
     android:minWidth="40dp"
     android:updatePeriodMillis="600000"
-    android:configure="net.stargw.fok.FOKWidget2Configure"
+    android:configure="net.stargw.karma.FOKWidget2Configure"
     android:previewImage="@drawable/widget2_preview" >
 </appwidget-provider>

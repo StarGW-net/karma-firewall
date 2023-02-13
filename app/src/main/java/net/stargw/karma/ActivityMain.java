@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,7 +25,6 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,7 +45,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import static net.stargw.fok.Global.getContext;
+import static net.stargw.karma.Global.getContext;
 
 
 // public class ActivityMain extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, ActivityMainListener  {
@@ -743,7 +742,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             Logs.myLog("Could not get version number", 3);
         }
 
-        String url = "https://www.stargw.net/apps/fok/help.html?ver=" + verName;
+        String url = "https://www.stargw.net/android/fok/help.html?ver=" + verName;
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);

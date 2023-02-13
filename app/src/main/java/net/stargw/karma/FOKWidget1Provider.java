@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 // import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 

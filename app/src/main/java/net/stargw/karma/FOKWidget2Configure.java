@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,7 +33,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import static net.stargw.fok.Global.getContext;
+import static net.stargw.karma.Global.getContext;
 
 public class FOKWidget2Configure extends Activity implements ActivityMainListener {
 

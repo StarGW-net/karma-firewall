@@ -1,9 +1,6 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -19,14 +16,13 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 /**
  * Created by swatts on 17/11/15.
  */
-public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filterable {
+public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterable {
 
     ActivityMainListener listener;
 
@@ -37,16 +33,14 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
 
     PackageManager pManager;
 
-    public AppInfoAdapterApps(Context context, ArrayList<AppInfo> apps) {
+    public AppInfoAdapterFW(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
 
-        listener = (FOKWidget2Configure) context;
+        listener = (ActivityMain) context;
 
         mContext = context;
 
-
         pManager = mContext.getPackageManager();
-
     }
 
 
@@ -90,9 +84,102 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         }
         // Lookup view for data population
         TextView text1 = (TextView) convertView.findViewById(R.id.activity_main_row_app_name);
-
         TextView text2 = (TextView) convertView.findViewById(R.id.activity_main_row_app_traffic);
-        text2.setText("");
+/*
+        long up = TrafficStats.getUidTxBytes(apps.UID2) - apps.bytesFWOut;
+        long down = TrafficStats.getUidRxBytes(apps.UID2) - apps.bytesFWIn;
+*/
+        /*
+        long up = apps.bytesOut - apps.bytesFWOut;
+        long down = apps.bytesIn - apps.bytesFWIn;
+
+        String appUp = showTraffic(up, true);
+        String appDown = showTraffic(down, false);
+
+        text2.setText(appUp + " " + appDown);
+
+        // color any blocked with traffic as red
+        if ( (apps.fw == true) && (up > 0) && (Global.getFirewallState())) {
+            // the GUI does not remember any app.bytes...
+            text2.setTextColor(Color.RED);
+        } else {
+            if ((apps.fw == false) && (up > 0) && (Global.getFirewallState())) {
+                // the GUI does not remember any app.bytes...
+                text2.setTextColor(Color.GREEN);
+            } else {
+                text2.setTextColor(Color.WHITE);
+            }
+        }
+*/
+
+        if (Global.getFirewallState() == true) {
+            if ( apps.date == 0 ) {
+                text2.setTypeface(null, Typeface.ITALIC);
+                text2.setTextColor(Color.WHITE);
+                text2.setText(R.string.app_data_date_string1);
+            }
+            if ( apps.date == 1 ) {
+                text2.setTypeface(null, Typeface.ITALIC);
+                text2.setTextColor(Color.WHITE);
+                text2.setText(R.string.app_data_date_string2);
+            }
+
+            if ( apps.date > 10 ) {
+                Time time = new Time(Time.getCurrentTimezone());
+                time.set(apps.date);
+                if (apps.bytesLocal == false) {
+                    if (apps.fw) {
+                        text2.setTextColor(Color.RED);
+                        text2.setText(Global.getContext().getString(R.string.app_data_date_string4) + " " + time.format(Global.getContext().getString(R.string.timeFormat)));
+                    } else {
+                        text2.setTextColor(Color.GREEN);
+                        text2.setText(Global.getContext().getString(R.string.app_data_date_string3) + " " + time.format(Global.getContext().getString(R.string.timeFormat)));
+                    }
+                } else {
+                    text2.setTextColor(Color.YELLOW);
+                    text2.setText(Global.getContext().getString(R.string.app_data_date_string5) + " " + time.format(Global.getContext().getString(R.string.timeFormat)));
+                }
+                text2.setTypeface(null, Typeface.NORMAL);
+            }
+
+            if (Build.VERSION.SDK_INT > 28)
+            {
+                text2.setText("");
+
+                /*
+                text2.setTextColor(mContext.getResources().getColor(R.color.corbflowerblue));
+                text2.setText(Global.getContext().getString(R.string.app_data_date_string6));
+
+                text2.setOnClickListener(new View.OnClickListener() {
+                    // @Override
+                    public void onClick(View v) {
+                        try {
+                            //Open battery stats page
+                            // Intent intent2 = new Intent(Intent.ACTION_MANAGE_NETWORK_USAGE);
+                            // startActivity(intent2);
+                            Intent intent2 = new Intent(Intent.ACTION_MAIN);
+                            intent2.setComponent(new ComponentName("com.android.settings",
+                                    "com.android.settings.Settings$DataUsageSummaryActivity"));
+                            intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            getContext().startActivity(intent2);
+
+                        } catch ( ActivityNotFoundException e ) {
+                            Toast.makeText(getContext(), "Cannot " + getContext().getString(R.string.activity_main_menu_stats), Toast.LENGTH_SHORT).show();
+                            // Toast.makeText(myContext, "Cannot show stats!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                */
+
+            }
+
+        } else {
+            text2.setText(R.string.app_data_date_string0);
+            text2.setText("");
+            text2.setTypeface(null, Typeface.ITALIC);
+            text2.setTextColor(Color.WHITE);
+        }
+        text2.setTypeface(null, Typeface.ITALIC);
 
         ImageView icon = (ImageView) convertView.findViewById(R.id.activity_main_row_app_icon);
         // ToggleButton tog = (ToggleButton) convertView.findViewById(R.id.rowToggle);
@@ -125,14 +212,14 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         tog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos); // STEVE ADD HERE
+                listener.changeSelectedItem(pos);
             }
         });
 
         text1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos); // STEVE ADD HERE
+                listener.changeSelectedItem(pos);
             }
         });
 
@@ -173,6 +260,14 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
     private void expandApp(View v, int position) {
 
         AppInfo app = getItem(position);
+
+        /*
+        long up = TrafficStats.getUidTxBytes(app.UID2);
+        long down = TrafficStats.getUidRxBytes(app.UID2);
+
+        String appUp = showTraffic(up, true);
+        String appDown = showTraffic(down, false);
+        */
 
         LinearLayout expand = (LinearLayout) v.findViewById(R.id.activity_main_row_app_expand_text);
         expand.removeAllViews();
@@ -228,6 +323,37 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
 
     }
 
+    private String showTraffic(long l, boolean up)
+    {
+        String result = "0";
+
+        int format = 0;
+        if(up == true)
+        {
+            format = R.string.up_msg;
+        } else {
+            format = R.string.down_msg;
+        }
+
+        float f = (float) l;
+
+        if (l < 1000000000000L)
+        {
+            result = Global.getContext().getString(format, (float) (f / 1000000000), "GB" );
+        }
+        if (l < 1000000000)
+        {
+            result = Global.getContext().getString(format, (float) (f / 1000000), "MB" );
+        }
+        if (l < 1000000)
+        {
+            result = Global.getContext().getString(format, (float) (f / 1000), "KB" );
+        }
+
+        // result = Global.getContext().getString(format, l, "B" );
+
+        return result;
+    }
 
     @Override
     public Filter getFilter() {
@@ -268,7 +394,23 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
                         // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
                             filteredItems.add(app);
                         }
-
+                        // Loop over package names...
+                        for(int i2 = 0; i2 < app.appNames.size(); i2++) {
+                            if( (app.appNames.get(i2).toString().toLowerCase().contains(constraint) ) ) {
+                                boolean newApp = true;
+                                for(int i4 = 0; i4 < filteredItems.size() ; i4++)
+                                {
+                                    if (filteredItems.get(i4).UID2 == app.UID2)
+                                    {
+                                        newApp = false;
+                                        break;
+                                    }
+                                }
+                                if (newApp == true) {
+                                    filteredItems.add(app); // miltiple??
+                                }
+                            }
+                        }
                     }
                     result.count = filteredItems.size();
                     result.values = filteredItems;

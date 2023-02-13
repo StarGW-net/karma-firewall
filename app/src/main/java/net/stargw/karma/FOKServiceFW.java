@@ -1,4 +1,4 @@
-package net.stargw.fok;
+package net.stargw.karma;
 
 
 import android.app.Notification;
