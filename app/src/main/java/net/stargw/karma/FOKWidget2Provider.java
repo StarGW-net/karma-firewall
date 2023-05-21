@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -22,8 +23,14 @@ import static net.stargw.karma.Global.getContext;
 
 public class FOKWidget2Provider extends AppWidgetProvider {
 
+    PackageManager pManager;
+
+
+
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         final int N = appWidgetIds.length;
+
+        pManager = context.getPackageManager();
 
         // Log.w("FWWidget2",  "FWWidget2 onUpdate");
 
@@ -124,7 +131,9 @@ public class FOKWidget2Provider extends AppWidgetProvider {
             return;
         }
 
-        views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon(uid)));
+
+
+        views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon2(uid)));
 
         if ( (intent.getAction() != null) && (intent.getAction().equals(Global.TOGGLEAPP))) {
             // Log.w("FWWidget2", "FWWidget2 Action TOGGLEAPP");
@@ -141,7 +150,7 @@ public class FOKWidget2Provider extends AppWidgetProvider {
                 i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(context, appWidgetId, i, 0);
 
-                views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon(uid)));
+                views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon2(uid)));
 
                 if (state == true) {
                     views.setViewVisibility(R.id.widgit2_deny, View.INVISIBLE);
@@ -221,36 +230,10 @@ public class FOKWidget2Provider extends AppWidgetProvider {
 
     }
 
-    private Drawable getIcon(int uid)
-    {
-        Drawable d = Global.getContext().getResources().getDrawable(R.drawable.fw_w_app);
-
-        if (Global.appListFW != null)
-        {
-            AppInfo app = Global.appListFW.get(uid);
-            if (app != null) {
-                return app.icon;
-            }
-        }
-
-        /*
-        if (Global.appListFW != null) {
-            Log.w("FWWidget2", "Number of apps = " + Global.appListFW.size());
-            for (int i = 0, l = Global.appListFW.size(); i < l; i++) {
-                AppInfo app = Global.appListFW.get(i);
-                if (app.UID2 == uid) {
-                    return app.icon;
-                }
-            }
-        }
-        */
-
-        return d;
-    }
-
 
     private Drawable getIcon2(int uid)
     {
+
 
         Drawable icon;
 
