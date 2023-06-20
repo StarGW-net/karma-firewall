@@ -85,25 +85,24 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
 
         // Try to figure out what sort of log it it
         int logType = 0;
-        if(apps.length() > 24)
+
+        if (apps.contains(" @SW@ "))
         {
-            char x = apps.charAt(23);
-            if (x == ':')
-            {
-                logType = 1;
-            } else {
-                if (Character.isDigit(apps.charAt(0))) {
-                    logType = 2;
-                }
+            logType = 1;
+        } else {
+            if (Character.isDigit(apps.charAt(0))) {
+                logType = 2;
             }
         }
+
 
         String d = "";
         String t = "";
         switch (logType) {
             case 1:
-                d = apps.substring(0, 24);
-                t = apps.substring(25);
+                int pos = apps.indexOf("@SW@ ");
+                d = apps.substring(0, pos);
+                t = apps.substring(pos+5);
 
                 date1.setText(d);
 

@@ -195,7 +195,7 @@ public class Logs {
 		myLog("READ PATH = " + f.toString(),3);
 
 		// This provides a read only content:// for other apps
-		Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fok.fileprovider",f);
+		Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.karma.fileprovider",f);
 
 		myLog("URI PATH = " + uri2.toString(),3);
 
@@ -242,7 +242,7 @@ public class Logs {
 		}
 
 		// This provides a read only content:// for other apps
-		Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fok.fileprovider",file);
+		Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.karma.fileprovider",file);
 
 		Intent intent2 = new Intent(Intent.ACTION_SEND);
 		intent2.putExtra(Intent.EXTRA_STREAM, uri2);
@@ -285,7 +285,7 @@ public class Logs {
 
 			if (logFile != null)
 			{
-				String logBuffer = humanDate + ": " + buf + "\n";
+				String logBuffer = humanDate + " @SW@ " + buf + "\n";
 
 				// Log.w(TAG, time.format("%H:%M:%S") + buf);
 				byte[] data = logBuffer.getBytes(); 

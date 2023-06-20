@@ -8,8 +8,8 @@ android {
         applicationId "net.stargw.fok"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 58
-        versionName "58"
+        versionCode 59
+        versionName "59"
     }
     buildTypes {
         release {

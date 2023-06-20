@@ -361,9 +361,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             item.setTitle(R.string.activity_main_menu_apps_system);
         }
 
-        item = m.findItem(R.id.action_notifications);
-        item.setChecked(Global.settingsEnableNotifications);
-
         item = m.findItem(R.id.action_boot);
         item.setChecked(Global.settingsEnableBoot);
 
@@ -380,12 +377,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             item.setTitle(getResources().getString(R.string.activity_main_menu_subnet) + Global.settingsSubnet);
         } else {
             item.setTitle(getResources().getString(R.string.activity_main_menu_subnet) + "None");
-        }
-
-        if (Build.VERSION.SDK_INT > 28)
-        {
-            item = m.findItem(R.id.action_notifications);
-            item.setVisible(false);
         }
 
 
@@ -421,24 +412,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                             screenRefresh();
                         }
                         return true;
-                    case R.id.action_notifications:
-                        if(Global.settingsEnableNotifications)
-                        {
-                            Global.settingsEnableNotifications = false;
-                        } else {
-                            Global.settingsEnableNotifications = true;
-                            if (Build.VERSION.SDK_INT >= 26) {
 
-                                Intent settingsIntent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())
-                                        .putExtra(Settings.EXTRA_CHANNEL_ID, "FW2");
-                                startActivity(settingsIntent);
-                            }
-
-                        }
-                        Global.saveSetings();
-                        return false;
                     case R.id.action_boot:
                         if(Global.settingsEnableBoot)
                         {

@@ -55,16 +55,16 @@ public class Global extends Application {
 
 	static final String LOG_FILE = "Karma-FW-log.txt";
 
-	static final String APPS_REFRESH_INTENT = "net.stargw.fok.intent.action.APPS_REFRESH";
-	static final String APPS_LOADING_INTENT = "net.stargw.fok.intent.action.APPS_LOADING";
-	static final String SCREEN_REFRESH_INTENT = "net.stargw.fok.intent.action.REFRESH";
-	static final String FIREWALL_STATE_CHANGE = "net.stargw.fok.intent.action.FIREWALL";
-	static final String FIREWALL_STATE_ON = "net.stargw.fok.intent.action.FIREWALL_ON";
-	static final String FIREWALL_STATE_OFF = "net.stargw.fok.intent.action.FIREWALL_OFF";
-	static final String HELP_DESTROYED = "net.stargw.fok.intent.action.HELP_DESTROYED";
-	static final String TOGGLE = "net.stargw.fok.intent.action.TOGGLE";
-	static final String TOGGLEAPP = "net.stargw.fok.intent.action.TOGGLEAPP";
-	static final String TOGGLEAPP_REFRESH = "net.stargw.fok.intent.action.TOGGLEAPP_REFRESH";
+	static final String APPS_REFRESH_INTENT = "net.stargw.karma.intent.action.APPS_REFRESH";
+	static final String APPS_LOADING_INTENT = "net.stargw.karma.intent.action.APPS_LOADING";
+	static final String SCREEN_REFRESH_INTENT = "net.stargw.karma.intent.action.REFRESH";
+	static final String FIREWALL_STATE_CHANGE = "net.stargw.karma.intent.action.FIREWALL";
+	static final String FIREWALL_STATE_ON = "net.stargw.karma.intent.action.FIREWALL_ON";
+	static final String FIREWALL_STATE_OFF = "net.stargw.karma.intent.action.FIREWALL_OFF";
+	static final String HELP_DESTROYED = "net.stargw.karma.intent.action.HELP_DESTROYED";
+	static final String TOGGLE = "net.stargw.karma.intent.action.TOGGLE";
+	static final String TOGGLEAPP = "net.stargw.karma.intent.action.TOGGLEAPP";
+	static final String TOGGLEAPP_REFRESH = "net.stargw.karma.intent.action.TOGGLEAPP_REFRESH";
 
 	static final String FIREWALL_START = "fw_start";
 	static final String FIREWALL_RESTART = "fw_restart";

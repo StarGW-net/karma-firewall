@@ -58,7 +58,6 @@ public class FOKServiceFW extends VpnService implements Runnable {
     public static boolean byWidget = false;
 
     NotificationManager notificationManager;
-    NotificationChannel channel;
 
     @Override
     public void onCreate() {
@@ -151,23 +150,6 @@ public class FOKServiceFW extends VpnService implements Runnable {
         }
     }
 
-    private String createTrafficNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "FW2";
-            String channelName = "FW Traffic";
-            channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
-            // omitted the LED color
-            channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-            notificationManager.createNotificationChannel(channel);
-            return channelId;
-        } else {
-            return "none";
-        }
-    }
-
     private void sendAppBroadcast(String message) {
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(message);
@@ -177,8 +159,6 @@ public class FOKServiceFW extends VpnService implements Runnable {
         Log.w("FWWService",  "update widget:" + message);
 
         updateMyWidgets(Global.getContext());
-
-
 
     }
 
@@ -319,22 +299,24 @@ public class FOKServiceFW extends VpnService implements Runnable {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
                 {
                     for(int i = 0; i < app.packageNames.size(); i++) {
-                        Logs.myLog("FW App: " + app.UID2 + " " + app.packageNames.get(i), 2);
+                        Logs.myLog("Block App: " + app.UID2 + " " + app.packageNames.get(i), 1);
                     }
                 } else {
                     if (app.fw) {
                         for(int i = 0; i < app.packageNames.size(); i++) {
                             try {
                                 builder.addAllowedApplication(app.packageNames.get(i));
-                                Logs.myLog("FW App: " + app.UID2 + " " + app.packageNames.get(i), 2);
+                                Logs.myLog("Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
+                                // Logs.myLog("Block App: " + app.appNames.get(i) + " " + app.UID2 + " " + app.packageNames.get(i), 1);
                             } catch (PackageManager.NameNotFoundException e) {
-                                Logs.myLog("FW Cannot FW App: "  + app.UID2 + " " + app.packageNames.get(i), 2);
+                                Logs.myLog("FW Cannot Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
                                 e.printStackTrace();
                             }
                         }
                     } else {
                         for(int i = 0; i < app.packageNames.size(); i++) {
-                            Logs.myLog("FW Bypass: "  + app.UID2 + " " + app.packageNames.get(i), 2);
+                            Logs.myLog("Allow App: "  + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 2);
+                            // Logs.myLog("Allow App: "  + app.UID2 + " " + app.packageNames.get(i), 2);
                             // builder.addDisallowedApplication(app.packageNames.get(i));
                         }
                     }
@@ -553,384 +535,11 @@ public class FOKServiceFW extends VpnService implements Runnable {
         super.onDestroy();
     }
 
-
     public void run() {
         // Log.i(TAG, "Started");
-        Logs.myLog("Firewall Service Thread Created.", 2);
-
-        // Allocate the buffer for a single packet.
-        ByteBuffer packet = ByteBuffer.allocate(32767);
-
-        if (vpnInterface != null) {
-            FileInputStream vpnIn = new FileInputStream(vpnInterface.getFileDescriptor());
-
-            while (!(Thread.currentThread().isInterrupted())) {
-                //get packet with in
-                //put packet to tunnel
-                //get packet form tunnel
-                //return packet with out
-                //sleep is a must
-                try {
-                    // Hmmm, pretty sure service will go to sleep!
-                    Thread.sleep(20000); // 20 secs
-                    Logs.myLog("Checking logs..." , 2);
-                    if (Global.getFirewallState() == true) {
-                        if (vpnInterface == null) {
-                            if (Global.getFirewallState() == true) {
-                                // Logs.myLog("Firewall Stopped!", 0);
-                                notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_stopped));
-                            }
-                            Global.setFirewallState(false);
-                        } else {
-                            if (Global.settingsLoggingLevel > 0) {
-                                if ((Build.VERSION.SDK_INT < 29)) {
-                                    readPacketsOLD(vpnIn, packet);
-                                } else {
-                                    readPacketsNEW(vpnIn, packet);
-                                }
-                            }
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    Logs.myLog("Firewall Service Thread Interrupted.", 2);
-                    if (vpnIn != null)
-                    {
-                        try {
-                            Logs.myLog("Firewall Service Thread close FD", 2);
-                            vpnIn.close();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    return; // actually leave the thread!!
-                }
-                // Logs.myLog("VPN Service doing stuff.", 2);
-            }
-        }
-
+        Logs.myLog("Firewall Service Running.", 2);
     }
 
-    private void readPacketsNEW(FileInputStream vpnIn,  ByteBuffer packet ) {
-
-        // Try to read packets
-        // IP Packet does not have UID of process
-        int length = 0;
-        try {
-            // length = vpnIn.read(packet.array());
-
-            while ( (length = vpnIn.read(packet.array())) > 0) {
-                Logs.myLog("Firewall Service Read Traffic. Bytes: " + length, 2);
-                packet.limit(length);
-                byte[] arr = new byte[packet.remaining()];
-                packet.get(arr);
-                // Ethernet header: 8037730bb933408d5c543de90800
-                // Decode packet: https://www.gasmi.net/hpd/
-                Logs.myLog("Firewall Service Blocked Traffic: [" + length + " bytes] - Hex: " + bytesToHex(arr), 2); // put back to 2 later...
-
-                String x = bytesToHex(arr);
-                String d = x;
-                if (x.length() > 20) {
-                    d = x.substring(0, 19) + "...";
-                }
-                if (x.substring(0, 2).equals("45")) {
-                    Logs.myLog("Firewall Service Blocked Traffic: [" + length + " bytes] - Hex: <a href=\"https://hpd.gasmi.net/?force=ipv4&data=" + x + "\">" + d + "</a>", 1); // put back to 2 later...
-                } else {
-                    if (x.substring(0, 2).equals("60")) {
-                        Logs.myLog("Firewall Service Blocked Traffic: [" + length + " bytes] - Hex: <a href=\"https://hpd.gasmi.net/?force=ipv6&data=" + x + "\">" + d + "</a>", 1); // put back to 2 later...
-
-                    } else {
-                        Logs.myLog("Firewall Service Blocked Traffic: [" + length + " bytes] - Hex: <a href=\"https://hpd.gasmi.net/?data=" + x + "\">" + d + "</a>", 1); // put back to 2 later...
-                    }
-                }
-                // Next packet
-                packet.clear();
-
-                // Not sure about this Steve!
-                sendAppBroadcast(Global.SCREEN_REFRESH_INTENT );
-                Logs.checkLogSize();
-
-            }
-            //  tunnel.write(packet);
-
-        } catch (Exception e) {
-            Logs.myLog("Firewall Service Read Exception.", 2);
-        }
-    }
-
-    private void readPacketsOLD(FileInputStream vpnIn,  ByteBuffer packet )
-    {
-
-        Time time = new Time(Time.getCurrentTimezone());
-        time.setToNow();
-
-        Map<Integer, Boolean> traffic = new HashMap<Integer, Boolean>();
-        Map<Integer, Boolean> trafficLocal = new HashMap<Integer, Boolean>();
-
-        // parseFile actually does the logging!
-        parseFile("/proc/net/tcp", traffic, trafficLocal);
-        parseFile("/proc/net/tcp6", traffic, trafficLocal);
-        parseFile("/proc/net/udp", traffic, trafficLocal);
-        parseFile("/proc/net/udp6", traffic, trafficLocal);
-
-        boolean anyTraffic = false;
-
-        // Take are of Notifications - NOT logging
-        Iterator<Integer> it = Global.appListFW.keySet().iterator();
-
-        while (it.hasNext()) {
-            int key = it.next();
-            AppInfo app = Global.appListFW.get(key);
-
-            if (traffic.containsKey(app.UID2)) {
-                Logs.myLog("Traffic in /proc/net/* detected! " + app.UID2, 3);
-                app.date = time.toMillis(true);
-                if ((app.fw) && (app.bytesLocal == false)) {
-                    if (Global.settingsEnableNotifications == true) {
-                        notifyTraffic(app.name);
-                    }
-                }
-
-                // Need to cater for blocked but allowed local
-                app.bytesIn++; // we just add one - no idea how many bytes - dont' care
-                anyTraffic = true;
-            }
-        }
-
-        if ( anyTraffic )
-        {
-            sendAppBroadcast(Global.SCREEN_REFRESH_INTENT );
-            Logs.checkLogSize();
-        }
-
-    }
-
-    public void runAndroid10() {
-        // Log.i(TAG, "Started");
-        Logs.myLog("Firewall Service Thread Created.", 2);
-
-        // Allocate the buffer for a single packet.
-        ByteBuffer packet = ByteBuffer.allocate(32767);
-
-        if (vpnInterface != null) {
-            FileInputStream vpnIn = new FileInputStream(vpnInterface.getFileDescriptor());
-
-
-            while (!(Thread.currentThread().isInterrupted())) {
-                //get packet with in
-                //put packet to tunnel
-                //get packet form tunnel
-                //return packet with out
-                //sleep is a must
-                try {
-                    Thread.sleep(20000); // 20 secs
-                    Logs.myLog("Doing some stuff" , 2);
-                    if (Global.getFirewallState() == true) {
-                        if (vpnInterface == null) {
-                            if (Global.getFirewallState() == true) {
-                                // Logs.myLog("Firewall Stopped!", 0);
-                                notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_stopped));
-                            }
-                            Global.setFirewallState(false);
-                        } else {
-
-                            // Try to read packets
-                            // IP Packet does not have UID of process
-                            int length = 0;
-                            try {
-                                length = vpnIn.read(packet.array());
-
-                                if (length > 0) {
-                                    // Logs.myLog("Firewall Service Read Traffic. Bytes: " + length, 1);
-                                    packet.limit(length);
-                                    byte[] arr = new byte[packet.remaining()];
-                                    packet.get(arr);
-                                    // Ethernet header: 8037730bb933408d5c543de90800
-                                    // Decode packet: https://www.gasmi.net/hpd/
-                                    Logs.myLog("Firewall Service Blocked Traffic: [" + length + " bytes] - Hex: " + bytesToHex(arr), 2);
-                                    // Do I try and reconcile this with traffic in /proc/net ?
-                                    packet.clear();
-                                }
-                                //  tunnel.write(packet);
-
-                            } catch (Exception e) {
-                                Logs.myLog("Firewall Service Read Exception.", 2);
-                            }
-
-
-                            Time time = new Time(Time.getCurrentTimezone());
-                            time.setToNow();
-
-
-
-                            boolean anyTraffic = false;
-
-                            Iterator<Integer> it = Global.appListFW.keySet().iterator();
-
-                            while (it.hasNext())
-                            {
-                                int key = it.next();
-                                AppInfo app = Global.appListFW.get(key);
-
-                                // loop round  TrafficStats  getUidTxPackets(int uid)
-                                // cannot differentiate local??
-                                long i = TrafficStats.getUidTxPackets(app.UID2);
-
-                                Logs.myLog("Check Traffic increased for: " + app.name + " (" + i + ")", 2);
-
-                                if (i > app.traffic)
-                                {
-                                    app.traffic = i;
-                                    app.bytesIn++;
-                                    anyTraffic = true;
-                                    Logs.myLog("Traffic increased for: " + app.name, 2);
-                                }
-
-                            }
-
-
-                            if ( anyTraffic )
-                            {
-                                sendAppBroadcast(Global.SCREEN_REFRESH_INTENT );
-                                Logs.checkLogSize();
-                            }
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    Logs.myLog("Firewall Service Thread Interrupted.", 2);
-                    if (vpnIn != null)
-                    {
-                        try {
-                            Logs.myLog("Firewall Service Thread close FD", 2);
-                            vpnIn.close();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    return; // actually leave the thread!!
-                }
-                // Logs.myLog("VPN Service doing stuff.", 2);
-            }
-        }
-
-    }
-
-    private void parseFile(String filename, Map<Integer,Boolean>  traffic, Map<Integer,Boolean>  trafficLocal)
-    {
-        //Get the text file
-        File file = new File(filename);
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-
-            boolean firstLine = true;
-            while ((line = br.readLine()) != null) {
-                Logs.myLog("Line: " + line, 3);
-                if (firstLine)
-                {
-                    firstLine = false;
-                    continue; // skip first line
-                }
-                String[] fields = line.split("\\s+");
-                if ( (fields != null) && (fields.length > 8) )
-                {
-                    // exclude localhosts and 0.0.0.0 traffic
-                    if ( ( (fields[2].length() > 32) && (!(fields[3].substring(0,32).equals("0000000000000000FFFF00000100007F"))) & (!(fields[3].substring(0,32).equals("00000000000000000000000000000000"))) ) ||
-                            ( (fields[2].length() > 8) && (fields[2].length() < 32) && (!(fields[3].substring(0,8).equals("0100007F"))) && (!(fields[3].substring(0,8).equals("00000000")))) )
-                    {
-
-                        try {
-                            int i = Integer.parseInt(fields[8]); // get UID
-                            if (Global.appListFW.containsKey(i)) {
-                                AppInfo thisApp = Global.appListFW.get(i);
-
-                                String ip = "";
-                                if ( (fields[3].length() > 32) )
-                                {
-                                    ip = fields[3].substring(24, 32);
-                                } else {
-                                    ip = fields[3].substring(0, 8);
-                                }
-                                Logs.myLog("IP: [" + ip + "]" , 3);
-
-                                // if test against local subnet
-                                if (Global.settingsSubnet != "") {
-                                    boolean error = false;
-                                    String[] parts2 = Global.settingsSubnet.split("/");
-                                    int mask = 24;
-                                    try {
-                                        mask = Integer.parseInt(parts2[1]);
-                                    } catch (Exception e) {
-                                        error = true;
-                                    }
-
-                                    if (error == false) {
-                                        IPUtil.CIDR x = new IPUtil.CIDR(parts2[0], mask); // your network
-                                        if (x.compare(ip) == true) {
-                                            // so how we deal with this from logging?
-                                            Logs.myLog("Allowed: " + thisApp.name + " to: " + IPUtil.CIDR.hextoIPString(ip) +  "(local)" , 1);
-                                            traffic.put(i, true);
-                                            thisApp.bytesLocal = true;
-                                        } else {
-                                            traffic.put(i, true);
-                                            // Logs.myLog("Found Traffic: " + thisApp.name, 3);
-                                            detailedTrafficLog(thisApp.name, thisApp.fw, ip, thisApp.UID2);
-                                            thisApp.bytesLocal = false;
-                                        }
-                                    } else {
-                                        traffic.put(i, true);
-                                        // Logs.myLog("Found Traffic: " + thisApp.name, 3);
-                                        detailedTrafficLog(thisApp.name, thisApp.fw, ip, thisApp.UID2);
-                                        thisApp.bytesLocal = false;
-                                    }
-                                } else {
-                                    // thisApp.date = time.format("%a %d %b %H:%M:%S"); // need as a number so can sort on time later!
-                                    traffic.put(i, true);
-                                    // Logs.myLog("Found Traffic: " + thisApp.name, 3);
-                                    detailedTrafficLog(thisApp.name, thisApp.fw, ip, thisApp.UID2);
-                                    thisApp.bytesLocal = false;
-                                }
-
-                            }
-                        } catch (NumberFormatException nfe) {
-                            Logs.myLog("Cannot parse: " + fields[8], 2);
-                        }
-                    } else {
-                        // Logs.myLog("Localhost/0.0.0.0 traffic detected UID: " + fields[8], 3);
-                        try {
-                            int i = Integer.parseInt(fields[8]); // get UID
-                            if (Global.appListFW.containsKey(i)) {
-                                AppInfo thisApp = Global.appListFW.get(i);
-                                // thisApp.date = time.format("%a %d %b %H:%M:%S"); // need as a number so can sort on time later!
-                                trafficLocal.put(i, true);
-                                // Logs.myLog("Found Localhost Traffic: " + thisApp.name, 3);
-                            }
-                        } catch (NumberFormatException nfe) {
-                            // Nothing
-                        }
-                    }
-                }
-            }
-            br.close();
-
-        } catch (IOException e) {
-            //You'll need to add proper error handling here
-            Logs.myLog("Cannot read: " + filename, 2);
-        }
-    }
-
-
-    private void detailedTrafficLog(String app, boolean fw, String ip, int uid)
-    {
-        if (Global.settingsLoggingLevel > 0) {
-            if (fw) {
-                Logs.myLog(getString(R.string.blocked) + " " + app + " [" + IPUtil.CIDR.hextoIPString(ip) + "]", 1);
-            } else {
-                Logs.myLog(getString(R.string.allowed) + " " + app + " [" + IPUtil.CIDR.hextoIPString(ip) + "]", 1);
-            }
-        }
-        // Logs.myLog("Traffic Log: " + app + "(" + uid + ") to: " + IPUtil.CIDR.hextoIPString(ip), 0);
-    }
 
     private void notifyFirewallState(String message)
     {
@@ -965,56 +574,6 @@ public class FOKServiceFW extends VpnService implements Runnable {
 
     }
 
-
-    private void notifyTraffic(String appName) {
-        Intent intent = new Intent(this, ActivityMain.class);
-        // use System.currentTimeMillis() to have a unique ID for the pending intent
-        // PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
-
-        Logs.myLog("Notify Traffic!", 2);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, ActivityLogs.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-        if (Build.VERSION.SDK_INT >= 26) {
-
-            if (channel == null) {
-                createTrafficNotificationChannel();
-            }
-
-            Notification n = new Notification.Builder(this, channel.getId())
-                    .setContentTitle(Global.getContext().getString(R.string.app_name))
-                    // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
-                    .setContentText(Global.getContext().getString(R.string.notfity_blocked))
-                    .setSmallIcon(R.drawable.ic_lock_idle_lock2)
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
-                    .setAutoCancel(true)
-                    .setContentIntent(contentIntent)
-                    .setAutoCancel(true).build();
-            notificationManager.notify(100, n); // we overwrite the current notitication
-
-
-
-        } else {
-
-            // build notification
-            // the addAction re-use the same intent to keep the example short
-            Notification n = new Notification.Builder(this)
-                    .setContentTitle(Global.getContext().getString(R.string.app_name))
-                    // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
-                    .setContentText(Global.getContext().getString(R.string.notfity_blocked))
-                    .setSmallIcon(R.drawable.ic_lock_idle_lock2)
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
-                    .setAutoCancel(true)
-                    .setContentIntent(contentIntent)
-                    .setAutoCancel(true).build();
-            notificationManager.notify(1, n); // we overwrite the current notitication
-        }
-
-
-
-    }
 
 
 }
