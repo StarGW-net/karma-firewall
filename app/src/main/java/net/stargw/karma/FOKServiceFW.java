@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.TrafficStats;
@@ -121,7 +122,7 @@ public class FOKServiceFW extends VpnService implements Runnable {
                 // Log.w(TAG, "foreground notification");
             }
             // Log.w(TAG, "Boot building an App List Steve");
-            Global.getAppList();
+            // Global.getAppList();
             startVPN(Global.FIREWALL_BOOT);
         }
         booted = false;
@@ -188,17 +189,6 @@ public class FOKServiceFW extends VpnService implements Runnable {
         }
     }
 
-
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
 
     private Builder buildVPN(String firewallCommand)
     {
@@ -285,6 +275,14 @@ public class FOKServiceFW extends VpnService implements Runnable {
             AppInfo app = Global.appListFW.get(key);
             // SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
             // app.fw = p.getBoolean("FW-" + app.UID2, false);
+/*
+            // TEST - UUID to packageName
+            PackageManager pm = getApplicationContext().getPackageManager();
+            String packageNames[] = pm.getPackagesForUid(1000);
+            for(int i1 = 0; i1 < packageNames.length; i1++) {
+                Logs.myLog("STEVE: " + packageNames[i1], 1);
+            }
+*/
 
             //
             // Add our app to make sure at least one app is blocked
@@ -309,7 +307,7 @@ public class FOKServiceFW extends VpnService implements Runnable {
                                 Logs.myLog("Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
                                 // Logs.myLog("Block App: " + app.appNames.get(i) + " " + app.UID2 + " " + app.packageNames.get(i), 1);
                             } catch (PackageManager.NameNotFoundException e) {
-                                Logs.myLog("FW Cannot Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
+                                Logs.myLog("Cannot Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
                                 e.printStackTrace();
                             }
                         }
@@ -538,6 +536,20 @@ public class FOKServiceFW extends VpnService implements Runnable {
     public void run() {
         // Log.i(TAG, "Started");
         Logs.myLog("Firewall Service Running.", 2);
+
+        while (!(Thread.currentThread().isInterrupted())) {
+            try {
+                // Sleep
+                Thread.sleep(300000); // 300 secs
+                Logs.myLog("Check apps HERE...", 2);
+                // How does this affect battery life
+                // especially in sleep mode...
+                Global.getAppList();
+            } catch (InterruptedException e) {
+                Logs.myLog("Firewall Service Thread Interrupted.", 2);
+                return; // actually leave the thread!!
+            }
+        }
     }
 
 

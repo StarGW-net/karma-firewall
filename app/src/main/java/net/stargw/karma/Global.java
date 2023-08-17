@@ -1,5 +1,9 @@
 package net.stargw.karma;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import java.util.Iterator;
@@ -23,6 +27,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,22 +40,34 @@ public class Global extends Application {
 	private static Context mContext;
 
 	// static ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
-
-	static Map<Integer, AppInfo> appListFW = new ConcurrentHashMap<Integer, AppInfo>();
 	//static Map<Integer, AppInfo> appListFW = new HashMap<Integer, AppInfo>();
-
 	// static ArrayList<HashMap<Integer, AppInfo>> appListFW = new ArrayList<HashMap<Integer, AppInfo>>(); // wow!!
+
+	// This is the main one and only app list
+	// This must be populated before the firewall cans start
+	// This must be populated before the GUI can be shown
+	static Map<Integer, AppInfo> appListFW = new ConcurrentHashMap<Integer, AppInfo>();
+
+	static final int APPLIST_NONE = 0;
+	static final int APPLIST_DOING = 1;
+	static final int APPLIST_DONE = 2;
+	static final int APPLIST_OLD = 3;
+	static int appListState = 0;
+
+	static boolean packageDone = false;
+
+	// to update the GUI
+	static int packageMax = 0;
+	static int packageCurrent = 0;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mContext = this;
 
-		if (Build.VERSION.SDK_INT > 28) {
-			SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-			p.edit().putBoolean("settingsEnableNotifications", false).apply();
-		}
 
+
+		Global.getAppListBackground();
 	}
 
 	static final String LOG_FILE = "Karma-FW-log.txt";
@@ -61,7 +78,6 @@ public class Global extends Application {
 	static final String FIREWALL_STATE_CHANGE = "net.stargw.karma.intent.action.FIREWALL";
 	static final String FIREWALL_STATE_ON = "net.stargw.karma.intent.action.FIREWALL_ON";
 	static final String FIREWALL_STATE_OFF = "net.stargw.karma.intent.action.FIREWALL_OFF";
-	static final String HELP_DESTROYED = "net.stargw.karma.intent.action.HELP_DESTROYED";
 	static final String TOGGLE = "net.stargw.karma.intent.action.TOGGLE";
 	static final String TOGGLEAPP = "net.stargw.karma.intent.action.TOGGLEAPP";
 	static final String TOGGLEAPP_REFRESH = "net.stargw.karma.intent.action.TOGGLEAPP_REFRESH";
@@ -75,17 +91,15 @@ public class Global extends Application {
 
 	static int focusUID = 0;
 
-	static int packageMax = 0;
-	static int packageCurrent = 0;
-	static boolean packageDone = false;
+
+
+
 
 	static Boolean settingsEnableExpert;
-	// static Boolean settingsEnableFirewall;
 	private static Boolean settingsFirewallStateOn = false;
 	static Boolean settingsEnableNotifications = true;
 	static Boolean settingsEnableBoot = false;
 	static Boolean settingsEnableRestart = false;
-	// static Boolean settingsDetailedLogs = false;
 	static String settingsSubnet = "";
 	static int settingsLoggingLevel = 0;
 
@@ -134,8 +148,6 @@ public class Global extends Application {
 
 		Logs.myLog("Firewall Service sent Firewall state broadcast!", 2);
 
-		// SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-		// p.edit().putBoolean("settingsFirewallStateOn", settingsFirewallStateOn).apply();
 	}
 
 	//
@@ -190,59 +202,115 @@ public class Global extends Application {
 		p.edit().putBoolean("settingsEnableNotifications", settingsEnableNotifications).apply();
 		p.edit().putInt("settingsLoggingLevel", settingsLoggingLevel).commit();
 		p.edit().putBoolean("settingsEnableBoot", settingsEnableBoot).apply();
-		// p.edit().putBoolean("settingsDetailedLogs", settingsDetailedLogs).apply();
 		p.edit().putBoolean("settingsEnableRestart", settingsEnableRestart).apply();
 		p.edit().putInt("settingsSortOption", settingsSortOption).apply();
 		p.edit().putString("settingsSubnet", settingsSubnet).apply();
 	}
 
 
-	public static boolean isSystemUID2(int uid)
+
+
+	public static void fastAppCheckBackground()
 	{
-		Boolean system = false;
 
-		if (uid < 10000) {
-			system = true;
-		} else {
-			system = false;
-		}
+		// Build apps
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				Global.fastAppCheck();
+			}
+		};
 
-		return system;
+		thread.start();
 	}
 
-
-	public static int convertUID(String uid)
+	public static void fastAppCheck()
 	{
-
-		Integer i = android.os.Process.getUidForName(uid);
-		return i;
-
-	}
-
-
-	static boolean checkOverride(String name, boolean flag)
-	{
-		if (name.equals("com.google.android.gms"))
+		// If we are building an app list - don't!
+		if (Global.appListState != APPLIST_DONE)
 		{
-			flag = true;
+			return;
 		}
-		return flag;
+
+		boolean rebuild = false;
+
+		// Quickly check apps and see if there is any new ones...
+		PackageInfo packageInfo;
+		List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
+
+
+		for (int i = 0; i < packageInfoList.size(); i++) {
+			Global.packageCurrent = i;
+			try {
+				packageInfo = packageInfoList.get(i);
+				// Global.appList.add(Global.getAppListApp(packageInfo));
+			} catch (Exception e) {
+				Logs.myLog("Cannot get package info...skipping", 3);
+				continue;
+			}
+
+			// STEVE
+			ApplicationInfo applicationInfo = packageInfo.applicationInfo;
+			int uid = applicationInfo.uid;
+
+			boolean internet = false;
+			if (packageInfo.requestedPermissions == null)
+			{
+				internet = false;
+			} else {
+				for (String permission : packageInfo.requestedPermissions) {
+					if (TextUtils.equals(permission, android.Manifest.permission.INTERNET)) {
+						internet = true;
+						break;
+					}
+				}
+			}
+
+			if (internet == false)
+			{
+				continue;
+			}
+
+			// Check UID against appList...
+			if (!(appListFW.containsKey(uid)))
+			{
+				rebuild = true;
+				break;
+			}
+		}
+		if (rebuild == true)
+		{
+			// signal app change...
+		}
 	}
 
+	public static void getAppListBackground()
+	{
 
+		// Build apps
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				Global.getAppList();
+			}
+		};
+
+		thread.start();
+	}
 
 	public static void getAppList()
 	{
-/*
-		if (rebuilding)
+
+		// If we are building an app list - don't!
+		if (Global.appListState == APPLIST_DOING)
 		{
-			Logs.myLog("App build alreay running. Ignoring this request!", 3);
 			return;
 		}
-		rebuilding = true;
-		*/
 
-		Global.packageDone = false;
+		Global.appListState = APPLIST_DOING;
+
+		// better than iterator?
+		// for(int i = 0, l = appListFW.size(); i < l; i++)
 
 		Iterator<Integer> it = Global.appListFW.keySet().iterator();
 
@@ -303,13 +371,22 @@ public class Global extends Application {
 			}
 		}
 
+		// Write to file - STEVE
+		// writeAppListFWFile(Global.appListFW);
 
 		// Global.duplicateUIDs();
-		Global.packageDone = true;
+		Global.appListState = APPLIST_DONE;
+
+		// Send to GUI if its listening
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
+		mContext.sendBroadcast(broadcastIntent);
 
 		return;
 
 	}
+
+
 
 
 	public static void getAppDetail(PackageInfo packageInfo) {
@@ -393,7 +470,7 @@ public class Global extends Application {
 		// app.processName = parts[0];
 
 		app.system = false;
-		// Look only for system apps
+		// Is it a system apps
 		if (!((applicationInfo.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) == 0)) {
 			app.system = true;
 		}
@@ -418,9 +495,12 @@ public class Global extends Application {
 
 
 		// override
-		app.system = Global.checkOverride(packageInfo.packageName, app.system);
+		// app.system = Global.checkOverride(packageInfo.packageName, app.system);
+
+
 
 /*
+		// We leave getting the icons to the GUI one demand
 		try {
 			app.icon = pManager.getApplicationIcon(packageName);
 		} catch (Exception e) {
@@ -443,13 +523,7 @@ public class Global extends Application {
 				// appFW.icon = app.icon;
 				appFW.icon = null;
 				appFW.name = app.name;
-				appFW.date = 0;
-				/*
-				appFW.bytesOut = TrafficStats.getUidTxBytes(app.UID2);
-				appFW.bytesIn = TrafficStats.getUidRxBytes(app.UID2);
-				*/
-				appFW.bytesLocal = false; // Not sure we acually use this any more!
-				appFW.bytesIn = 0;
+
 				appListFW.put(app.UID2,appFW); // replacing?
 			}
 
@@ -485,7 +559,7 @@ public class Global extends Application {
 
 			if (appFW.packageNames.size() > 1) {
 				// appFW.icon = getContext().getResources().getDrawable(R.drawable.android);
-				appFW.name = "Apps (UID " + app.UID2 + ")";
+				appFW.name = "_Apps (UID " + app.UID2 + ")";
 			}
 
 			/*
@@ -501,6 +575,9 @@ public class Global extends Application {
 
 
 			// SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+
+			// Get if its firewalled or not.
+			// Maybe test to see if key exists and if not write false
 			appFW.fw = p.getBoolean("FW-" + app.UID2, false);
 
 			Logs.myLog("App Name:      " + app.name, 3);
@@ -554,4 +631,24 @@ public class Global extends Application {
 			}
 		}
 	}
+
+	//
+	// Write the list of firewall apps object to file
+	//
+	public static void writeAppListFWFile(Map<Integer, AppInfo> appData) {
+		File appDir = mContext.getFilesDir();
+		File mypath = new File(appDir, "fwapps");
+		try {
+			FileOutputStream myFile = new FileOutputStream(mypath);
+			// FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+			ObjectOutputStream os = new ObjectOutputStream(myFile);
+			os.writeObject(appData);
+			os.close();
+			myFile.close();
+		} catch (IOException e) {
+			Logs.myLog("Cannot write FW objects to: " + "fwapps", 3);
+		}
+	}
+
+
 }

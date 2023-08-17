@@ -240,22 +240,9 @@ public class ActivityLogs extends Activity {
         // m.removeItem(m.findItem(R.id.add_queue));
 
         // Just don't show on any version
-        if (Build.VERSION.SDK_INT > 28)
-        {
-            item = m.findItem(R.id.action_view);
-            item.setVisible(false);
-        } else {
-            item = m.findItem(R.id.action_view);
-            item.setVisible(false);
-        }
-
         item = m.findItem(R.id.action_view);
-        if (viewBlocked)
-        {
-            item.setTitle(R.string.activity_logs_menu_view_allowed);
-        } else {
-            item.setTitle(R.string.activity_logs_menu_view_blocked);
-        }
+        item.setVisible(false);
+
 
         switch (Global.settingsLoggingLevel) {
             case 0:

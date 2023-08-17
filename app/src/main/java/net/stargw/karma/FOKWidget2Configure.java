@@ -252,7 +252,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         text = (TextView) appLoad.findViewById(R.id.infoMessage2);
         text.setText(R.string.InfoLoadingApps);
         // text.setGravity(i);
-
+/*
         // Runs on GUI thread (should I use a service)
         Thread thread = new Thread() {
             @Override
@@ -265,7 +265,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         };
 
         thread.start();
-
+*/
         appLoad.show();
     }
 
@@ -352,12 +352,17 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
         int packages = packageInfoList.size();
 
+        // STEVE - not sure how this will work...
+        displayAppDialog();
+
+        /*
         // App build list should be underway
         if ( (Global.packageDone == false) || (Global.packageMax != packages) ) {
             displayAppDialog();
         } else {
             appRefresh();
         }
+        */
 
     }
 

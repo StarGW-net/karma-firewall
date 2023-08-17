@@ -17,6 +17,7 @@
         <activity
             android:name="net.stargw.karma.ActivityMain"
             android:label="@string/app_name"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTop">
 
             <intent-filter>
@@ -27,6 +28,7 @@
 
         <activity
             android:name="net.stargw.karma.ActivityLogs"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:excludeFromRecents="true">
@@ -44,6 +46,7 @@
 
         <service
             android:name="net.stargw.karma.FOKServiceFW"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE">

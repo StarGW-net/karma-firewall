@@ -45,6 +45,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import static net.stargw.karma.Global.APPLIST_DOING;
 import static net.stargw.karma.Global.getContext;
 
 
@@ -157,7 +158,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         {
                             int key = it.next();
                             AppInfo thisApp = Global.appListFW.get(key);
-                            thisApp.date = 0;
                         }
                     }
                     updateFirewallStateDisplay(true);
@@ -218,6 +218,14 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
     void displayAppDialog()
     {
+        // remove any old dialogs
+        if (appLoad != null) {
+            Logs.myLog("Close dialog", 2);
+            appLoad.cancel();
+            appLoad.dismiss();
+            appLoad = null;
+        }
+
         // Display a loading dialog box until the app list is prepared by the service.
         appLoad = new Dialog(myContext);
         // appLoad = new ProgressDialog(myContext);
@@ -234,7 +242,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         text = (TextView) appLoad.findViewById(R.id.infoMessage2);
         text.setText(R.string.InfoLoadingApps);
         // text.setGravity(i);
-
+/*
         // Runs on GUI thread (should I use a service)
         Thread thread = new Thread() {
             @Override
@@ -247,6 +255,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         };
 
         thread.start();
+*/
 
         appLoad.show();
     }
@@ -302,6 +311,18 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         registerReceiver(mReceiver, mIntentFilter);
 
+        //
+        // plist building is kicked off by Global application onCreate
+        //
+        if (Global.appListState == APPLIST_DOING)
+        {
+            displayAppDialog();
+        }
+
+        // OK we don't check packages on resume - maybe we should...
+
+        /*
+
         // Count packages - a quick and dirty way to see if there have been any changes
         // Rather than using a package broadcast receiver
         List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
@@ -309,6 +330,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         Logs.myLog("Previous packages = " + Global.packageMax, 2);
         Logs.myLog("Current packages = " + packages, 2);
+
+
 
         // App build list should be underway
         if ( (Global.packageDone == false) || (Global.packageMax != packages) ) {
@@ -326,6 +349,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
             appRefresh();
         }
+         */
+        appRefresh();
 
     }
 
@@ -581,16 +606,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             case 2:
                 mySort2(appInfoSource);
                 break;
-            case 3:
-                mySort3(appInfoSource);
-                break;
-            case 4:
-                mySort4(appInfoSource);
-                break;
-            case 5:
-                mySort5(appInfoSource);
-                break;
             default:
+                mySort0(appInfoSource);
                 break;
         }
 
@@ -957,7 +974,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         // change the global - which may have been destroyed!!
         if (Global.appListFW.containsKey(thisApp.UID2)) {
-            Global.appListFW.get(thisApp.UID2).date = 1;
             Global.appListFW.get(thisApp.UID2).fw = thisApp.fw;
         }
 
@@ -1138,7 +1154,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             // check system is viewable now...
             if ((app.enabled) && (app.internet) && (app.system == Global.settingsEnableExpert) ) {
                 app.fw = state;
-                app.date = 1;
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
                 p.edit().putBoolean("FW-" + app.UID2, app.fw).apply();
 
@@ -1169,15 +1184,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(myContext);
 
-        //         final String
-        String options[] = null;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-        {
-            options = myContext.getResources().getStringArray(R.array.sortOptions);
-        } else {
-            options = myContext.getResources().getStringArray(R.array.sortOptionsNew);
+        // final String
+        String options[] = myContext.getResources().getStringArray(R.array.sortOptionsNew);
 
-        }
 
         builder.setTitle(myContext.getString(R.string.sort_option_set));
 
@@ -1291,7 +1300,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         appInfo2.addAll(appList2);
 
 
-
         /*
         Collections.sort(appInfo, new Comparator<AppInfo>() {
             public int compare(AppInfo appInfoA, AppInfo appInfoB) {
@@ -1300,182 +1308,5 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         });
         */
     }
-
-
-    // Sort by date
-    void mySort3 (ArrayList<AppInfo> appInfo2)
-    {
-        ArrayList<AppInfo> appList1 = new ArrayList<AppInfo>();
-        ArrayList<AppInfo> appList2 = new ArrayList<AppInfo>();
-
-        for (int i =0 ; i < appInfo2.size(); i++ )
-        {
-            AppInfo app = appInfo2.get(i);
-            if (app.date > 10)
-            {
-                appList1.add(app);
-            } else {
-                appList2.add(app);
-            }
-        }
-
-        Collections.sort(appList1, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return Long.compare(appInfoB.date,appInfoA.date);
-            }
-        });
-
-        Collections.sort(appList2, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-
-        appInfo2.clear();
-        appInfo2.addAll(appList1);
-        appInfo2.addAll(appList2);
-
-    }
-
-    // Sort accept and deny into two date lists
-    void mySort4( ArrayList<AppInfo> appInfo2)
-    {
-
-        ArrayList<AppInfo> appList1 = new ArrayList<AppInfo>();
-        ArrayList<AppInfo> appList2 = new ArrayList<AppInfo>();
-
-        ArrayList<AppInfo> appList3 = new ArrayList<AppInfo>();
-        ArrayList<AppInfo> appList4 = new ArrayList<AppInfo>();
-
-        for (int i =0 ; i < appInfo2.size(); i++ )
-        {
-            AppInfo app = appInfo2.get(i);
-            if (!(app.fw))
-            {
-                if (app.date > 10)
-                {
-                    appList1.add(app);
-                } else {
-                    appList2.add(app);
-                }
-            } else {
-                if (app.date > 10)
-                {
-                    appList3.add(app);
-                } else {
-                    appList4.add(app);
-                }
-            }
-        }
-
-        Collections.sort(appList1, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return Long.compare(appInfoB.date,appInfoA.date);
-            }
-        });
-
-        Collections.sort(appList2, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return Long.compare(appInfoB.date,appInfoA.date);
-            }
-        });
-
-        Collections.sort(appList3, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-
-        Collections.sort(appList4, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-
-        appInfo2.clear();
-        appInfo2.addAll(appList1);
-        appInfo2.addAll(appList2);
-        appInfo2.addAll(appList3);
-        appInfo2.addAll(appList4);
-
-        /*
-        Collections.sort(appInfo, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-        */
-    }
-
-    void mySort5( ArrayList<AppInfo> appInfo2)
-    {
-
-        ArrayList<AppInfo> appList1 = new ArrayList<AppInfo>();
-        ArrayList<AppInfo> appList2 = new ArrayList<AppInfo>();
-
-        ArrayList<AppInfo> appList3 = new ArrayList<AppInfo>();
-        ArrayList<AppInfo> appList4 = new ArrayList<AppInfo>();
-
-        for (int i =0 ; i < appInfo2.size(); i++ )
-        {
-            AppInfo app = appInfo2.get(i);
-            if ((app.fw))
-            {
-                if (app.date > 10)
-                {
-                    appList1.add(app);
-                } else {
-                    appList2.add(app);
-                }
-            } else {
-                if (app.date > 10)
-                {
-                    appList3.add(app);
-                } else {
-                    appList4.add(app);
-                }
-            }
-        }
-
-        Collections.sort(appList1, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return Long.compare(appInfoB.date,appInfoA.date);
-            }
-        });
-
-        Collections.sort(appList3, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return Long.compare(appInfoB.date,appInfoA.date);
-            }
-        });
-
-        Collections.sort(appList2, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-
-        Collections.sort(appList4, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-
-        appInfo2.clear();
-        appInfo2.addAll(appList1);
-        appInfo2.addAll(appList2);
-        appInfo2.addAll(appList3);
-        appInfo2.addAll(appList4);
-
-        /*
-        Collections.sort(appInfo, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-        */
-    }
-
-
 
 }
