@@ -7,5 +7,13 @@ After a number of years I have stopped releasing Karma Firewall on Google Play a
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/net.stargw.fok/)
-     
+ 
+<br>
+Buy Developer a Coffee:
+<br>
+
+[<img src="https://www.stargw.net/android/karma/images/coffee-buy2.png"
+     alt="By Developer a Coffee"
+     height="120">](https://www.stargw.net/money/?android)
+    
      
