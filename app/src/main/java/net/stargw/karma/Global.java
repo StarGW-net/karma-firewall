@@ -2,6 +2,7 @@ package net.stargw.karma;
 
 import java.util.ArrayList;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -168,7 +170,53 @@ public class Global extends Application {
 		Logs.myLog(header + ":" + message,3);
 	}
 
+	//
+	// Display a popup info screen
+	//
+	public static void updateMessageDo(final Context context, String header, String message, int i)
+	{
+		long ts = new Date().getTime();
+		ts = ts / 1000;
 
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+
+		long last = p.getLong("UPDATE_INFO", 0);
+
+		if ((ts - last) < (15*24*60*60) )
+		{
+			return;
+		}
+
+		p.edit().putLong("UPDATE_INFO", ts).commit();
+
+		final Dialog info = new Dialog(context);
+
+		info.setContentView(R.layout.dialog_info);
+		info.setTitle(header);
+
+		TextView text = (TextView) info.findViewById(R.id.infoMessage);
+		text.setText(message);
+		// text.setGravity(i);
+
+		Button dialogButton = (Button) info.findViewById(R.id.infoButton);
+
+
+		dialogButton.setOnClickListener(new OnClickListener() {
+			// @Override
+			public void onClick(View v) {
+				// notificationCancel(context);
+				info.cancel();
+				String url = "https://www.stargw.net/android/karma/update.html";
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				context.startActivity(i);
+			}
+		});
+
+
+		info.show();
+		Logs.myLog(header + ":" + message,3);
+	}
 
 	public static void getSettings()
 	{

@@ -1,0 +1,1 @@
+Fixed some logging bugs. Streamlined logging - due to the way recent versions of Android work Karma can nolonger access any traffic logs. We block but we cannot see!
