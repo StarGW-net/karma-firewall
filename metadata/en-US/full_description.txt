@@ -4,11 +4,3 @@ Ever wondered why lots of apps that have no need for Internet access require Int
 
 Karma Firewall is the safest, most trusted Android Firewall. Karma FW is completely different from all other VPN Firewalls. Karma FW requires NO Internet permissions. Without permissions CANNOT send any data anywhere. We intercept no allowed traffic. The ONLY permission Karma FW requires is start on boot!
 
-Version 59
-==========
-Fixed some logging bugs. Streamlined logging - due to the way recent versions of Android work Karma can nolonger access any traffic logs. We block but we cannot see!
-
-Version 58
-==========
-Fixed widget crash
-

@@ -733,7 +733,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             Logs.myLog("Could not get version number", 3);
         }
 
-        String url = "https://www.stargw.net/android/fok/help.html?ver=" + verName;
+        String url = "https://www.stargw.net/android/karma/help.html?ver=" + verName;
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);

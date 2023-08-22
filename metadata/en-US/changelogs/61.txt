@@ -1,0 +1,1 @@
+Chanded to FDroid reproducible build
