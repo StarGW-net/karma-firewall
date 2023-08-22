@@ -122,6 +122,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         appLoad.dismiss();
                         appLoad = null;
 
+                        Global.updateMessageDo(myContext,"Update","Click below for an important update about Karma Firewall",0);
+
                         AppWidgetManager man = AppWidgetManager.getInstance(myContext);
                         int[] ids = man.getAppWidgetIds(
                                 new ComponentName(myContext,FOKWidget2Provider.class));
@@ -716,7 +718,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             Logs.myLog("Could not get version number", 3);
         }
 
-        String url = "https://www.stargw.net/android/fok/help.html?ver=" + verName;
+        String url = "https://www.stargw.net/android/update/help.html?ver=" + verName;
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);
