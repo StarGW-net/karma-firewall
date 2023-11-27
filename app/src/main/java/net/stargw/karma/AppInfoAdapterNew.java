@@ -1,9 +1,14 @@
 package net.stargw.karma;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +22,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filterable {
+
+public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterable {
 
     ActivityMainListener listener;
 
@@ -28,16 +34,14 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
 
     // PackageManager pManager;
 
-    public AppInfoAdapterApps(Context context, ArrayList<AppInfo> apps) {
+    public AppInfoAdapterNew(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
 
-        listener = (Widget2Configure) context;
+        // listener = (ActivityMain) context;
 
         mContext = context;
 
-
         // pManager = mContext.getPackageManager();
-
     }
 
 
@@ -81,9 +85,12 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         }
         // Lookup view for data population
         TextView text1 = (TextView) convertView.findViewById(R.id.activity_main_row_app_name);
-
         TextView text2 = (TextView) convertView.findViewById(R.id.activity_main_row_app_traffic);
+
+        // We don't use text2 line any more
         text2.setText("");
+        text2.setTypeface(null, Typeface.ITALIC);
+        text2.setTextColor(Color.WHITE);
 
         ImageView icon = (ImageView) convertView.findViewById(R.id.activity_main_row_app_icon);
         // ToggleButton tog = (ToggleButton) convertView.findViewById(R.id.rowToggle);
@@ -100,9 +107,8 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         {
             icon.setImageDrawable(apps.icon);
         }
+
         // tog.setChecked(apps.kill);
-
-
         tog.setVisibility(View.VISIBLE);
 
         if (apps.fw >= 30)
@@ -115,19 +121,22 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         }
 
         final int pos = position;
+
+
         tog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos); // STEVE ADD HERE
+                changeSelectedItem(pos);
             }
         });
 
         text1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos); // STEVE ADD HERE
+                changeSelectedItem(pos);
             }
         });
+
 
         final View vp = convertView;
         final LinearLayout expand = (LinearLayout) convertView.findViewById(R.id.activity_main_row_app_expand);
@@ -157,7 +166,6 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         });
 
 
-
         // Return the completed view to render on screen
         return convertView;
 
@@ -166,6 +174,14 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
     private void expandApp(View v, int position) {
 
         AppInfo app = getItem(position);
+
+        /*
+        long up = TrafficStats.getUidTxBytes(app.UID2);
+        long down = TrafficStats.getUidRxBytes(app.UID2);
+
+        String appUp = showTraffic(up, true);
+        String appDown = showTraffic(down, false);
+        */
 
         LinearLayout expand = (LinearLayout) v.findViewById(R.id.activity_main_row_app_expand_text);
         expand.removeAllViews();
@@ -209,18 +225,10 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
             }
         }
 
-/*
-        TextView text2 = (TextView) v.findViewById(R.id.activity_main_row_app_bytesOut);
-        text2.setText(Global.getContext().getString(R.string.app_data_boot_up, appUp));
-
-        TextView text3 = (TextView) v.findViewById(R.id.activity_main_row_app_bytesIn);
-        text3.setText(Global.getContext().getString(R.string.app_data_boot_down, appDown));
-*/
         TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
         text4.setText("UID: " + app.UID2);
 
     }
-
 
     @Override
     public Filter getFilter() {
@@ -261,7 +269,23 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
                         // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
                             filteredItems.add(app);
                         }
-
+                        // Loop over package names...
+                        for(int i2 = 0; i2 < app.appNames.size(); i2++) {
+                            if( (app.appNames.get(i2).toString().toLowerCase().contains(constraint) ) ) {
+                                boolean newApp = true;
+                                for(int i4 = 0; i4 < filteredItems.size() ; i4++)
+                                {
+                                    if (filteredItems.get(i4).UID2 == app.UID2)
+                                    {
+                                        newApp = false;
+                                        break;
+                                    }
+                                }
+                                if (newApp == true) {
+                                    filteredItems.add(app); // miltiple??
+                                }
+                            }
+                        }
                     }
                     result.count = filteredItems.size();
                     result.values = filteredItems;
@@ -281,4 +305,50 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
 
         return filter;
     }
+
+    public void changeSelectedItem(int position) {
+
+        AppInfo app = getItem(position);
+
+        AppInfo thisApp = Global.appListFW.get(app.UID2);
+
+        // If we want to use 40 for new blocked then 40 becomes 20 here...
+        if (thisApp != null) {
+            if (thisApp.fw == 30) {
+                thisApp.fw = 10;
+            } else {
+                thisApp.fw = 30;
+            }
+
+            SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+            p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
+
+            AppWidgetManager man = AppWidgetManager.getInstance(mContext);
+            int[] ids = man.getAppWidgetIds(
+                    new ComponentName(mContext, Widget2Provider.class));
+            for (int i=0; i<ids.length; i++) {
+                int appWidgetId = ids[i];
+                Intent updateIntent = new Intent();
+                updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                // updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
+                mContext.sendBroadcast(updateIntent);
+            }
+
+            // adapter.notifyDataSetChanged(); // maybe need this
+            notifyDataSetChanged();
+
+            if (Global.getFirewallState() == true) {
+
+                Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
+                serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
+                // serviceIntent.putExtra("restart", "app");
+                Global.getContext().startService(serviceIntent);
+                // thisApp.bytesFWOut = TrafficStats.getUidTxBytes(thisApp.UID2);
+                // thisApp.bytesFWIn = TrafficStats.getUidRxBytes(thisApp.UID2);
+            }
+
+        }
+    }
+
 }

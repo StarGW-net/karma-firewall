@@ -5,58 +5,37 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.net.TrafficStats;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
-// import android.support.v4.content.ContextCompat;
-import android.text.format.Time;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
-/**
- * Created by swatts on 10/06/16.
- */
-public class FOKServiceFW extends VpnService implements Runnable {
+public class ServiceFW extends VpnService implements Runnable {
 
-    private static final String TAG = "FOKLog";
+    private static final String TAG = "KarmaLog";
 
     private Thread mThread;
 
     static ParcelFileDescriptor vpnInterface = null;
 
     // ArrayList<AppInfo> appInfo;
-
-    int z = 0;
-
-    private static boolean booted = false;
-    public static boolean byWidget = false;
 
     NotificationManager notificationManager;
 
@@ -67,65 +46,53 @@ public class FOKServiceFW extends VpnService implements Runnable {
         Global.getSettings();
         Logs.getLoggingLevel();
 
-        // This never seems to get called!
-        // Log.w(TAG, "Android onCreate");
-
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
 
     }
 
 
 
-    public void SonCreate() {
+    public void SonCreate(String flag, String message) {
 
         Global.getSettings();
 
-        String message = "Firewall Started on Boot";
         // appInfo = new ArrayList<AppInfo>();
 
         // notificationManager = NotificationManagerCompat.from(this);
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        Log.w(TAG, "Booting = " + booted);
+        Log.w(TAG, "Starting = " + message);
 
-        if ( (booted) || (byWidget) )
-        {
-            // Log.w(TAG, "Booting cos booted = true");
-            if (byWidget)
-            {
-                message = "Firewall Started by Widget";
-            }
 
-            booted = false;
-            byWidget = false;
-            // For Oreo
+        // For Oreo
+        if (Build.VERSION.SDK_INT >= 26) {
+            // Log.w(TAG, "Booting Android API26+");
+            String channelId = createBootNotificationChannel();
+            int icon = R.drawable.ic_lock_idle_lock2;
 
-            if (Build.VERSION.SDK_INT >= 26) {
-                Log.w(TAG, "Booting Android API26+");
-                String channelId = createNotificationChannel();
-                int icon = R.drawable.ic_lock_idle_lock2;
+            PendingIntent pIntent = PendingIntent.getActivity(this, 0,
+                    new Intent(this, ActivityMain.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-                PendingIntent pIntent = PendingIntent.getActivity(this, 0,
-                        new Intent(this, ActivityMain.class), PendingIntent.FLAG_UPDATE_CURRENT);
+            Notification n = new Notification.Builder(this, channelId)
+                    .setContentTitle(Global.getContext().getString(R.string.app_name))
+                    .setContentText(message)
+                    .setSmallIcon(icon)
+                    .setAutoCancel(true)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
+                    .setContentIntent(pIntent).build();
 
-                Notification n = new Notification.Builder(this, channelId)
-                        .setContentTitle(Global.getContext().getString(R.string.app_name))
-                        .setContentText(message)
-                        .setSmallIcon(icon)
-                        .setAutoCancel(true)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
-                        .setContentIntent(pIntent).build();
-
-                startForeground(100, n);
-                // Log.w(TAG, "foreground notification");
-            }
-            // Log.w(TAG, "Boot building an App List Steve");
-            // Global.getAppList();
-            startVPN(Global.FIREWALL_BOOT);
+            startForeground(100, n);
+            // Log.w(TAG, "foreground notification");
         }
-        booted = false;
+
+        // Log.w(TAG, "Boot building an App List Steve");
+        // Global.getAppList();
+        // App list will be built by Global.onCreate
+        // Service will rebuild every few mins
+        startVPN(flag);
+
+        // booted = false;
 
         Logs.getLoggingLevel();
         Logs.myLog("Firewall Service created.", 2);
@@ -133,13 +100,12 @@ public class FOKServiceFW extends VpnService implements Runnable {
     }
 
 
-
-    private String createNotificationChannel() {
+    private String createBootNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "FW";
-            String channelName = "FW On Boot Alert";
+            String channelName = "FW Start Alert";
             NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
             // omitted the LED color
             channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
@@ -151,6 +117,8 @@ public class FOKServiceFW extends VpnService implements Runnable {
         }
     }
 
+
+
     private void sendAppBroadcast(String message) {
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(message);
@@ -159,36 +127,9 @@ public class FOKServiceFW extends VpnService implements Runnable {
 
         Log.w("FWWService",  "update widget:" + message);
 
-        updateMyWidgets(Global.getContext());
+        Global.updateMyWidgets();
 
     }
-
-    public static void updateMyWidgets(Context context) {
-        AppWidgetManager man = AppWidgetManager.getInstance(context);
-        int[] ids = man.getAppWidgetIds(
-                new ComponentName(context,FOKWidget1Provider.class));
-        for (int i=0; i<ids.length; i++) {
-            int appWidgetId = ids[i];
-            Intent updateIntent = new Intent();
-            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            // updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-            context.sendBroadcast(updateIntent);
-        }
-
-        // tell all the widgets that the firewall is diabled
-        ids = man.getAppWidgetIds(
-                new ComponentName(context,FOKWidget2Provider.class));
-        for (int i=0; i<ids.length; i++) {
-            int appWidgetId = ids[i];
-            Intent updateIntent = new Intent();
-            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            // updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-            context.sendBroadcast(updateIntent);
-        }
-    }
-
 
     private Builder buildVPN(String firewallCommand)
     {
@@ -267,22 +208,19 @@ public class FOKServiceFW extends VpnService implements Runnable {
 
         builder.addRoute("0:0:0:0:0:0:0:0", 0);
 
+        if (Global.appListFW == null)
+        {
+            Logs.myLog("No apps! Cannot start VPN", 1);
+            return null;
+        } else {
+            Logs.myLog("Start VPN with number of apps = " + Global.appListFW.size(), 1);
+        }
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
 
         while (it.hasNext())
         {
             int key = it.next();
             AppInfo app = Global.appListFW.get(key);
-            // SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-            // app.fw = p.getBoolean("FW-" + app.UID2, false);
-/*
-            // TEST - UUID to packageName
-            PackageManager pm = getApplicationContext().getPackageManager();
-            String packageNames[] = pm.getPackagesForUid(1000);
-            for(int i1 = 0; i1 < packageNames.length; i1++) {
-                Logs.myLog("STEVE: " + packageNames[i1], 1);
-            }
-*/
 
             //
             // Add our app to make sure at least one app is blocked
@@ -300,7 +238,7 @@ public class FOKServiceFW extends VpnService implements Runnable {
                         Logs.myLog("Block App: " + app.UID2 + " " + app.packageNames.get(i), 1);
                     }
                 } else {
-                    if (app.fw) {
+                    if (app.fw >= 30) {
                         for(int i = 0; i < app.packageNames.size(); i++) {
                             try {
                                 builder.addAllowedApplication(app.packageNames.get(i));
@@ -328,13 +266,22 @@ public class FOKServiceFW extends VpnService implements Runnable {
     }
 
     // Hook to start FW from BOOT
-    public static void start(Context context) {
-        Intent serviceIntent = new Intent(context, FOKServiceFW.class);
+    public static void boot(Context context) {
+        Intent serviceIntent = new Intent(context, ServiceFW.class);
         serviceIntent.putExtra("command", Global.FIREWALL_BOOT);
 
-        Log.w(TAG, "start called");
+        Log.w(TAG, "boot called");
 
-        booted = true;
+        ContextCompat.startForegroundService(context, serviceIntent);
+    }
+
+    // Hook to start FW from BOOT
+    public static void replace(Context context) {
+        Intent serviceIntent = new Intent(context, ServiceFW.class);
+        serviceIntent.putExtra("command", Global.FIREWALL_REPLACE);
+
+        Log.w(TAG, "replace called");
+
         ContextCompat.startForegroundService(context, serviceIntent);
     }
 
@@ -390,11 +337,7 @@ public class FOKServiceFW extends VpnService implements Runnable {
                 if (firewallCommand.equals(Global.FIREWALL_BOOT)) {
                     notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_fail3));
                 } else {
-                    if (firewallCommand.equals(Global.FIREWALL_DESTROY_RESTART)) {
-                        notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_fail4));
-                    } else {
-                        notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_fail1));
-                    }
+                    notifyFirewallState(Global.getContext().getString(R.string.notify_firewall_fail1));
                 }
             } else {
                 notifyFirewallState(String.format(Global.getContext().getString(R.string.notify_firewall_fail2),errorText));
@@ -409,8 +352,16 @@ public class FOKServiceFW extends VpnService implements Runnable {
                 Logs.myLog("Firewall Enabled On Boot!", 1);
             }
 
-            if (firewallCommand.equals(Global.FIREWALL_DESTROY_RESTART)) {
-                Logs.myLog("Firewall Enabled After Termination!", 1);
+            if (firewallCommand.equals(Global.FIREWALL_WIDGET)) {
+                Logs.myLog("Firewall Enabled By Widget!", 1);
+            }
+
+            if (firewallCommand.equals(Global.FIREWALL_QS)) {
+                Logs.myLog("Firewall Enabled By Quick Panel!", 1);
+            }
+
+            if (firewallCommand.equals(Global.FIREWALL_REPLACE)) {
+                Logs.myLog("Firewall Enabled By Upgrade!", 1);
             }
 
             if (firewallCommand.equals(Global.FIREWALL_RESTART)) {
@@ -485,12 +436,26 @@ public class FOKServiceFW extends VpnService implements Runnable {
                 Logs.myLog("Firewall Service received intent: " + command, 2);
                 if (command.equals(Global.FIREWALL_BOOT)) {
                     Logs.myLog("Firewall Service received boot intent", 2);
-                    Logs.myLog("Let onCreate do the actual start", 2);
+                    // Logs.myLog("Let onCreate do the actual start", 2);
                     // startVPN(command);
                     // onCreate never called
-                    SonCreate();
+                    SonCreate(Global.FIREWALL_BOOT,"Started on Boot");
                 }
-                if (command.equals(Global.FIREWALL_START)) {
+                if (command.equals(Global.FIREWALL_WIDGET)) {
+                    Logs.myLog("Firewall Service received widget intent", 2);
+                    // Logs.myLog("Let onCreate do the actual start", 2);
+                    // startVPN(command);
+                    // onCreate never called
+                    SonCreate(Global.FIREWALL_WIDGET,"Started by Widget");
+                }
+                if (command.equals(Global.FIREWALL_QS)) {
+                    Logs.myLog("Firewall Service received Quick Panel intent", 2);
+                    // Logs.myLog("Let onCreate do the actual start", 2);
+                    // startVPN(command);
+                    // onCreate never called
+                    SonCreate(Global.FIREWALL_QS,"Started by Quick Panel");
+                }
+                if (command.equals(Global.FIREWALL_START)) { // Only possible via GUI
                     Logs.myLog("Firewall Service received start intent", 2);
                     startVPN(command);
                 }
@@ -498,8 +463,8 @@ public class FOKServiceFW extends VpnService implements Runnable {
                     Logs.myLog("Firewall Service received restart intent", 2);
                     startVPN(command);
                 }
-                if (command.equals(Global.FIREWALL_DESTROY_RESTART)) {
-                    Logs.myLog("Firewall Service received destroy restart intent", 2);
+                if (command.equals(Global.FIREWALL_REPLACE)) {
+                    Logs.myLog("Firewall Service received replace restart intent", 2);
                     startVPN(command);
                 }
                 if (command.equals(Global.FIREWALL_STOP)) {        // close an old VPN
@@ -528,7 +493,8 @@ public class FOKServiceFW extends VpnService implements Runnable {
     @Override
     public void onDestroy() {
         Logs.myLog("Firewall Service destroyed.", 2);
-        // stopVPN();
+        Global.setFirewallState(false);
+        Global.updateMyWidgets();
         sendAppBroadcast(Global.FIREWALL_STATE_CHANGE);
         super.onDestroy();
     }
@@ -541,7 +507,7 @@ public class FOKServiceFW extends VpnService implements Runnable {
             try {
                 // Sleep
                 Thread.sleep(300000); // 300 secs
-                Logs.myLog("Check apps HERE...", 2);
+                Logs.myLog("Service Checking apps HERE...", 2);
                 // How does this affect battery life
                 // especially in sleep mode...
                 Global.getAppList();

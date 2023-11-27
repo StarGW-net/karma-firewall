@@ -13,9 +13,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by swatts on 17/11/15.
- */
+
 public class LogAdapter extends ArrayAdapter<String> implements Filterable {
 
     private ArrayList<String> appsSorted; // for filtering

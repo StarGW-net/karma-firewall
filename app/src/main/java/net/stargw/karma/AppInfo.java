@@ -5,12 +5,7 @@ import android.graphics.drawable.Drawable;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- * Created by swatts on 17/11/15.
- */
 public class AppInfo implements Cloneable, Serializable {
-
-
 
     public AppInfo() {
         // TODO Auto-generated constructor stub
@@ -18,7 +13,8 @@ public class AppInfo implements Cloneable, Serializable {
 
     public String name;
 
-    // Cannot searlise object and save with drawable;
+    // Cannot seralise object and save with drawable;
+    // So we make it transient and exclude it
     public transient Drawable icon;
 
     public ArrayList<String> packageNames = null;
@@ -26,10 +22,18 @@ public class AppInfo implements Cloneable, Serializable {
 
     public int UID2; // No UID 1
 
-    public boolean fw =false;
+    // public boolean fw = false;
+
+    public int fw = 10; // Allowed
+    // 10 = Allowed
+    // 20 = New (Allowed)
+    // 30 = Firewalled
+
     public boolean system;
     public boolean internet = false;
     public boolean enabled = true;
+
+    public boolean newApp = true;
 
     public boolean expandView = false;
 
@@ -56,8 +60,8 @@ public class AppInfo implements Cloneable, Serializable {
     This contains a drawable so cannot be serialised and saved.
     But maybe we can use transient on drawable object?
 
-    This has to be built before the app can be used
-    1) We need it in the GUI to display stiff
+    This Map has to be built before the app can be used
+    1) We need it in the GUI to display stuff
     2) We need it in the service to log UID to App Name
 
     So we either build in GUI and on Boot - how to do just one?

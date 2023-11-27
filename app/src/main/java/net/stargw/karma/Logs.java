@@ -26,7 +26,7 @@ public class Logs {
 	// private static String logBuffer = ""; // put time in here
 	
 	// private static int LoggingLevel = 0;
-	private static final String TAG = "FOKLog";
+	private static final String TAG = "KarmaLog";
 	private static FileOutputStream logFile = null;
 	
 	public Logs() {
@@ -291,7 +291,7 @@ public class Logs {
 				byte[] data = logBuffer.getBytes(); 
 				try {
 					logFile.write(data);
-					if (Global.settingsLoggingLevel > 3) {
+					if (Global.settingsLoggingLevel > 3) { // STEVE
 						Log.w(TAG, buf);
 					}
 				} catch (Exception e) {

@@ -1,1 +1,5 @@
-Chanded to FDroid reproducible build
+• Chanded to FDroid reproducible build
+• Qdded Quick Start Panel Button
+• Detect New Apps
+• Automatically Firewall New Apps
+• Widget Fixes

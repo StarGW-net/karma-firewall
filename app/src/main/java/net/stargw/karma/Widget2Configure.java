@@ -10,11 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,11 +31,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 
+import static net.stargw.karma.Global.APPLIST_DOING;
 import static net.stargw.karma.Global.getContext;
 
-public class FOKWidget2Configure extends Activity implements ActivityMainListener {
+public class Widget2Configure extends Activity implements ActivityMainListener {
 
     private AppInfoAdapterApps adapter;
     private ArrayList<AppInfo> appInfoSource;
@@ -64,7 +64,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         }
 
 
-        setContentView(R.layout.fok_widget2_configure);
+        setContentView(R.layout.widget2_configure);
 
         ImageView btn = (ImageView) findViewById(R.id.activity_main_menu_icon);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -175,13 +175,31 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(myContext);
 
         RemoteViews views = new RemoteViews(myContext.getPackageName(),
-                R.layout.fok_widget2_layout);
+                R.layout.widget2_layout);
         appWidgetManager.updateAppWidget(appWidgetId, views);
 
+/*
 
-        Intent i = new Intent(myContext, FOKWidget2Provider.class);
+    The requestCode used when creating a pendingIntent is not
+    intended to pass on to the receiver, it is intended as a way
+    for the app creating the pendingIntent to be able to manage
+    multiple pendingIntents.
+
+    Suppose an alarm app needed to create several pendingIntents,
+    and later needs to cancel or modify one of them. The requestCode
+    is used to identify which one to cancel/modify.
+
+    To pass data on, use the putExtra as described above. Note you
+    might very well want to use RowId for both the requestCode and
+    the Extra data.
+
+ */
+
+        Intent i = new Intent(myContext, Widget2Provider.class);
         i.setAction(Global.TOGGLEAPP);
         i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        i.putExtra("APP", thisApp.UID2);
+        i.putExtra("VIEW", R.layout.widget2_layout);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(myContext, 0, i, 0);
 
         // Log.w("FWWidget2 Config","App Widget ID = " + appWidgetId + " - UID = " + thisApp.UID2);
@@ -198,7 +216,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
 
         views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(thisApp.icon));
 
-        if (thisApp.fw == true) {
+        if (thisApp.fw >= 30) {
             views.setViewVisibility(R.id.widgit2_allow, View.INVISIBLE);
             views.setViewVisibility(R.id.widgit2_deny, View.VISIBLE);
         } else {
@@ -251,21 +269,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
 
         text = (TextView) appLoad.findViewById(R.id.infoMessage2);
         text.setText(R.string.InfoLoadingApps);
-        // text.setGravity(i);
-/*
-        // Runs on GUI thread (should I use a service)
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                Global.getAppList();
-                Intent broadcastIntent = new Intent();
-                broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
-                myContext.sendBroadcast(broadcastIntent);
-            }
-        };
 
-        thread.start();
-*/
         appLoad.show();
     }
 
@@ -307,19 +311,20 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
                         appLoad.cancel();  // can I take progress input from service?
                         appLoad.dismiss();
                         appLoad = null;
-
-                        AppWidgetManager man = AppWidgetManager.getInstance(myContext);
-                        int[] ids = man.getAppWidgetIds(
-                                new ComponentName(myContext,FOKWidget2Provider.class));
-                        for (int i=0; i<ids.length; i++) {
-                            int appWidgetId = ids[i];
-                            Intent updateIntent = new Intent();
-                            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-                            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-                            // updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-                            myContext.sendBroadcast(updateIntent);
-                        }
                     }
+
+                    AppWidgetManager man = AppWidgetManager.getInstance(myContext);
+                    int[] ids = man.getAppWidgetIds(
+                            new ComponentName(myContext, Widget2Provider.class));
+                    for (int i=0; i<ids.length; i++) {
+                        int appWidgetId = ids[i];
+                        Intent updateIntent = new Intent();
+                        updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                        updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                        // updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
+                        myContext.sendBroadcast(updateIntent);
+                    }
+
                     appRefresh();
                     // createGUI(); // recreate..?
 
@@ -335,7 +340,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
         super.onResume();
 
         // register receiver
-        mReceiver = new FOKWidget2Configure.BroadcastListener();
+        mReceiver = new Widget2Configure.BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Global.FIREWALL_STATE_CHANGE);
         mIntentFilter.addAction(Global.FIREWALL_STATE_OFF);
@@ -347,22 +352,22 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
 
         registerReceiver(mReceiver, mIntentFilter);
 
-        // Count packages - a quick and dirty way to see if there have been any changes
-        // Rather than using a package broadcast receiver
-        List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
-        int packages = packageInfoList.size();
-
-        // STEVE - not sure how this will work...
-        displayAppDialog();
-
-        /*
-        // App build list should be underway
-        if ( (Global.packageDone == false) || (Global.packageMax != packages) ) {
+        // If we have no list try and build one
+        // Don't want widget refreshing really
+        if ( (Global.appListFW == null) || (Global.appListFW.isEmpty()) )
+        {
+            Log.w("Wid Config",  "No apps build");
             displayAppDialog();
+            Global.getAppListBackground();
         } else {
+            if (Global.appListState == APPLIST_DOING)
+            {
+                displayAppDialog();
+            }
+            Log.w("Wid Config",  "Apps, so display");
             appRefresh();
         }
-        */
+
 
     }
 
@@ -415,6 +420,7 @@ public class FOKWidget2Configure extends Activity implements ActivityMainListene
                         return true;
 
                     case R.id.action_refresh:
+                        Global.getAppListBackground();
                         displayAppDialog();
                         return true;
 

@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.text.TextUtils;
-import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +17,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by swatts on 17/11/15.
- */
 public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterable {
 
     ActivityMainListener listener;
@@ -31,7 +26,7 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
     Context mContext;
 
-    PackageManager pManager;
+    // PackageManager pManager;
 
     public AppInfoAdapterFW(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
@@ -40,7 +35,7 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
         mContext = context;
 
-        pManager = mContext.getPackageManager();
+        // pManager = mContext.getPackageManager();
     }
 
 
@@ -100,14 +95,17 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         // text1.setText(apps.name + " (" + apps.UID2 +")");
         // text2.setText(apps.packageName);
 
-        // Load icons once on the fly
-        Global.getIcon(pManager,apps);
-        icon.setImageDrawable(apps.icon);
+        // Load icons once on the fly didn't really work
+        // Global.getIcon(pManager,apps);
+        if (apps.icon != null)
+        {
+            icon.setImageDrawable(apps.icon);
+        }
 
         // tog.setChecked(apps.kill);
         tog.setVisibility(View.VISIBLE);
 
-        if (apps.fw)
+        if (apps.fw >= 30)
         {
             tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.fw_app_off));
             // tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.no3));

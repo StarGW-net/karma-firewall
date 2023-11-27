@@ -16,6 +16,7 @@
     <string name="activity_main_menu_subnet">Allow Local:&#160;</string>
     <string name="activity_main_menu_logs">View Logs</string>
     <string name="activity_main_menu_stats">View Data Usage</string>
+    <string name="activity_main_menu_autofw">Firewall New Apps</string>
     <string name="activity_main_menu_help">Help</string>
     <string name="activity_main_menu_donate">Donate</string>
     <string name="activity_main_menu_refresh">Refresh Apps</string>
@@ -76,6 +77,7 @@
     <string name="notify_firewall_terminated">Firewall terminated! Enable "Firewall Restart" under options for auto restart.</string>
     <string name="notify_firewall_restart">Firewall terminated! But restarting. This prevents any other Firewall or VPN working on your phone. To stop this behaviour, disable "Firewall Restart" under options.</string>
     <string name="notify_firewall_block_all">Your version of Android does not support per app blocking.\n\nBlocking all Apps!</string>
+    <string name="notify_autofw">Experimental new feature.\n\nKarma will PERIODICALLY detect new apps in the background. Select this if you would like these apps to be firewalled when detected.\n\nThis is NOT instantaneous, therefore there may be a short time where these apps are NOT firewalled.</string>
 
     <string name="app_data_boot" formatted="false">Data since boot:</string>
     <string name="app_data_boot_up" formatted="false">%s</string>

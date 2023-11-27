@@ -1,9 +1,5 @@
 package net.stargw.karma;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import java.util.Iterator;
@@ -14,6 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import android.app.Application;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,18 +22,20 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.core.app.NotificationCompat;
 
 public class Global extends Application {
 
@@ -48,24 +51,24 @@ public class Global extends Application {
 	// This must be populated before the GUI can be shown
 	static Map<Integer, AppInfo> appListFW = new ConcurrentHashMap<Integer, AppInfo>();
 
-	static final int APPLIST_NONE = 0;
 	static final int APPLIST_DOING = 1;
 	static final int APPLIST_DONE = 2;
-	static final int APPLIST_OLD = 3;
 	static int appListState = 0;
 
-	static boolean packageDone = false;
 
 	// to update the GUI
 	static int packageMax = 0;
 	static int packageCurrent = 0;
+
+	static NotificationChannel newAppNotificationChannel;
+	static NotificationManager notificationManager;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mContext = this;
 
-
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
 		Global.getAppListBackground();
 	}
@@ -84,15 +87,16 @@ public class Global extends Application {
 
 	static final String FIREWALL_START = "fw_start";
 	static final String FIREWALL_RESTART = "fw_restart";
-	static final String FIREWALL_DESTROY_RESTART = "fw_destroy_restart";
 	static final String FIREWALL_BOOT = "fw_boot";
+	static final String FIREWALL_REPLACE = "fw_replace";
+	static final String FIREWALL_QS = "fw_start_qs";
+	static final String FIREWALL_WIDGET = "fw_widget";
 	static final String FIREWALL_STOP = "fw_stop";
 	static final String FIREWALL_STATUS = "fw_status";
 
+	static final String WIDGET_ACTION = "widget_action";
+
 	static int focusUID = 0;
-
-
-
 
 
 	static Boolean settingsEnableExpert;
@@ -210,82 +214,16 @@ public class Global extends Application {
 
 
 
-	public static void fastAppCheckBackground()
-	{
-
-		// Build apps
-		Thread thread = new Thread() {
-			@Override
-			public void run() {
-				Global.fastAppCheck();
-			}
-		};
-
-		thread.start();
-	}
-
-	public static void fastAppCheck()
-	{
-		// If we are building an app list - don't!
-		if (Global.appListState != APPLIST_DONE)
-		{
-			return;
-		}
-
-		boolean rebuild = false;
-
-		// Quickly check apps and see if there is any new ones...
-		PackageInfo packageInfo;
-		List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
-
-
-		for (int i = 0; i < packageInfoList.size(); i++) {
-			Global.packageCurrent = i;
-			try {
-				packageInfo = packageInfoList.get(i);
-				// Global.appList.add(Global.getAppListApp(packageInfo));
-			} catch (Exception e) {
-				Logs.myLog("Cannot get package info...skipping", 3);
-				continue;
-			}
-
-			// STEVE
-			ApplicationInfo applicationInfo = packageInfo.applicationInfo;
-			int uid = applicationInfo.uid;
-
-			boolean internet = false;
-			if (packageInfo.requestedPermissions == null)
-			{
-				internet = false;
-			} else {
-				for (String permission : packageInfo.requestedPermissions) {
-					if (TextUtils.equals(permission, android.Manifest.permission.INTERNET)) {
-						internet = true;
-						break;
-					}
-				}
-			}
-
-			if (internet == false)
-			{
-				continue;
-			}
-
-			// Check UID against appList...
-			if (!(appListFW.containsKey(uid)))
-			{
-				rebuild = true;
-				break;
-			}
-		}
-		if (rebuild == true)
-		{
-			// signal app change...
-		}
-	}
 
 	public static void getAppListBackground()
 	{
+
+		// If we are already building an app list - don't!
+		if (Global.appListState == APPLIST_DOING)
+		{
+			Logs.myLog("Applist Build in progress...skipping", 2);
+			return;
+		}
 
 		// Build apps
 		Thread thread = new Thread() {
@@ -301,11 +239,7 @@ public class Global extends Application {
 	public static void getAppList()
 	{
 
-		// If we are building an app list - don't!
-		if (Global.appListState == APPLIST_DOING)
-		{
-			return;
-		}
+
 
 		Global.appListState = APPLIST_DOING;
 
@@ -327,6 +261,7 @@ public class Global extends Application {
 		Global.packageMax = packageInfoList.size();
 		Global.packageCurrent = 0;
 
+
 		for (int i = 0; i < packageInfoList.size(); i++)
 		{
 			Global.packageCurrent = i;
@@ -338,70 +273,128 @@ public class Global extends Application {
 				continue;
 			}
 
-
 			getAppDetail(packageInfo);
+
 			// Logs.myLog(id + "added: " + app.name + " " + appList.size(), 1);
 
-
-			Logs.myLog("-------------------", 3);
+			// Logs.myLog("-------------------", 3);
 
 			Intent broadcastIntent = new Intent();
 			broadcastIntent.setAction(Global.APPS_LOADING_INTENT);
 			mContext.sendBroadcast(broadcastIntent);
 		}
 
-
 		Logs.myLog("Built an installed app list of: " +  Global.appListFW.size(), 2);
 
+		// Tidy up deleted apps - by going through all the shared preference files
+
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+
+		Map<String, ?> allEntries = p.getAll();
+		for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+			String k = entry.getKey();
+			// Logs.myLog("FW App Stored: " + k + ": " + entry.getValue().toString(),2);
+			if (k.contains("FW-")) {
+				String u = entry.getKey().substring(3);
+				int uid = 0;
+				// Logs.myLog("Got: " + u, 2);
+				try {
+					uid = Integer.parseInt(u);
+					if (Global.appListFW.containsKey(uid)) {
+						AppInfo app = Global.appListFW.get(uid);
+						if (app.flush == true)
+						{
+							// remove
+							p.edit().remove("FW-" + uid).apply();
+							Logs.myLog("App Removed via flush: " + uid + " " + app.name, 3);
+							Global.appListFW.remove(uid);
+						}
+					} else {
+						p.edit().remove("FW-" + uid).apply();
+						Logs.myLog("App Removed via File: " +  uid, 3);
+					}
+				} catch(NumberFormatException nfe) {
+					continue;
+				}
+			}
+
+		}
+
+		// Notify new apps
+		String newAppText = "";
 
 		it = Global.appListFW.keySet().iterator();
+
+		boolean restart = false;
 
 		while (it.hasNext())
 		{
 			int key = it.next();
-			AppInfo app = Global.appListFW.get(key);
-
-			if (app.flush == true)
+			AppInfo thisApp = Global.appListFW.get(key);
+			if (thisApp.fw == 25)
 			{
-				SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-				p.edit().remove("FW-" + app.UID2).apply();
-				Logs.myLog("Will remove: " +  app.UID2, 2);
-				// Global.appListFW.remove(key);
-				it.remove();
+				Logs.myLog("Notify App: " +  thisApp.name, 3);
+				newAppText = newAppText + thisApp.name + "\n";
+				// Change so does not notify again, but still new
+				thisApp.fw = 20;
+				p.edit().putInt("FW-" + thisApp.UID2, 20).apply();
 			}
+			if (thisApp.fw == 45)
+			{
+				restart = true;
+				Logs.myLog("Notify App: " +  thisApp.name, 3);
+				newAppText = newAppText + thisApp.name + "\n";
+				// Change so does not notify again, but still new
+				thisApp.fw = 40;
+				p.edit().putInt("FW-" + thisApp.UID2, 40).apply();
+			}
+		}
+
+		if (!newAppText.isEmpty())
+		{
+			notifyNewApp(newAppText);
+		}
+
+		if ( (restart == true) && (Global.getFirewallState() == true) )
+		{
+			Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
+			serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
+			Global.getContext().startService(serviceIntent);
 		}
 
 		// Write to file - STEVE
 		// writeAppListFWFile(Global.appListFW);
 
-		// Global.duplicateUIDs();
+
+		// Finished building - let others build appList
 		Global.appListState = APPLIST_DONE;
+
+		p.edit().putBoolean("settingsFirstRun", false).apply();
 
 		// Send to GUI if its listening
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
 		mContext.sendBroadcast(broadcastIntent);
 
+		Global.updateMyWidgets();
+
 		return;
 
 	}
 
 
-
-
 	public static void getAppDetail(PackageInfo packageInfo) {
-
-		long t1 = System.currentTimeMillis();
 
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 		int LoggingLevel = p.getInt("LoggingLevel",1);
 
 		AppInfo app = new AppInfo();
 
+		AppInfo appNew = null; // = new AppInfo();
+
 		ApplicationInfo applicationInfo = packageInfo.applicationInfo;
 
 		PackageManager pManager = mContext.getPackageManager();
-		// ActivityManager aManager = (ActivityManager) mContext.getSystemService(mContext.ACTIVITY_SERVICE);
 
 		String packageName = packageInfo.packageName;
 		// app.versionName = packageInfo.versionName;
@@ -446,23 +439,6 @@ public class Global extends Application {
 			app.name = packageName;
 		}
 
-		/*
-		Configuration config = new Configuration();
-		config.locale = Resources.getSystem().getConfiguration().locale;
-		final Resources galleryRes;
-		try {
-			galleryRes = pManager.getResourcesForApplication(app.name);
-			galleryRes.updateConfiguration(config, mContext.getResources().getDisplayMetrics());
-			String localizedLabel = galleryRes.getString(applicationInfo.labelRes);
-			app.name = localizedLabel;
-			Logs.myLog("Localised name: " + app.name, 3);
-		} catch (Exception e) {
-			if (LoggingLevel > 2) {
-				Logs.myLog("Cannot get localised name: " + app.name, 3);
-			}
-		}
-		*/
-
 		app.enabled = applicationInfo.enabled;
 		app.UID2 = applicationInfo.uid; // change to a string??
 
@@ -494,21 +470,19 @@ public class Global extends Application {
 		}
 
 
-		// override
-		// app.system = Global.checkOverride(packageInfo.packageName, app.system);
+		// We leave getting the icons to the GUI on demand
 
-
-
-/*
-		// We leave getting the icons to the GUI one demand
 		try {
 			app.icon = pManager.getApplicationIcon(packageName);
 		} catch (Exception e) {
 			app.icon = getContext().getResources().getDrawable(R.drawable.android);
 			Logs.myLog("Cannot get icon!", 3);
 		}
-*/
-		app.icon = null;
+
+
+		// app.icon = getIcon(pManager,app);
+
+		// app.icon = null;
 
 		if ( (app.internet == true) && (app.enabled == true) )
 		{
@@ -520,8 +494,8 @@ public class Global extends Application {
 
 			} else {
 				appFW = new AppInfo();
-				// appFW.icon = app.icon;
-				appFW.icon = null;
+				appFW.icon = app.icon;
+				// appFW.icon = null;
 				appFW.name = app.name;
 
 				appListFW.put(app.UID2,appFW); // replacing?
@@ -532,7 +506,7 @@ public class Global extends Application {
 			// How to handle removal of a system package with shared UID ???
 
 			if (appFW.packageNames == null) {
-				Logs.myLog("New UID, New package name " + packageName, 3 );
+				Logs.myLog("Got UID, package name " + packageName, 3 );
 				appFW.packageNames = new ArrayList<String>();
 				appFW.packageNames.add(packageName);
 				appFW.appNames = new ArrayList<String>();
@@ -573,23 +547,45 @@ public class Global extends Application {
 			appFW.internet = true;
 			appFW.system = app.system;
 
-
-			// SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-
 			// Get if its firewalled or not.
-			// Maybe test to see if key exists and if not write false
-			appFW.fw = p.getBoolean("FW-" + app.UID2, false);
+			if (p.contains("FW-" + app.UID2))
+			{
+				appFW.fw = p.getInt("FW-" + app.UID2, 20);
+				Logs.myLog("Known App" + app.name, 3);
+			} else {
+				// write key as false - lets us track apps
 
+				if (p.getBoolean("settingsFirstRun",true) == false) {
+					// New app!
+					Logs.myLog("New App: " + app.name, 3);
+
+					int autoFW = p.getInt("settingsAutoFW",0);
+					if (autoFW == 0) {
+						p.edit().putInt("FW-" + app.UID2, 25).apply();
+						appFW.fw = 25;
+					} else { // Mark for auto firewalling
+						p.edit().putInt("FW-" + app.UID2, 45).apply();
+						appFW.fw = 45;
+					}
+				} else {
+					p.edit().putInt("FW-" + app.UID2, 10).apply();
+					Logs.myLog("UnKnown App" + app.name, 3);
+					appFW.fw = 10;
+				}
+			}
+
+/*
 			Logs.myLog("App Name:      " + app.name, 3);
 			Logs.myLog("Package Name:  " + packageName, 3);
 			// Logs.myLog("Process Name:  " + app.processName, 3);
 			Logs.myLog("App UID2:      " + app.UID2, 3);
 			Logs.myLog("System:        " + app.system, 3);
-
+*/
 			appFW.flush = false;
 
 		}
 
+		return;
 	}
 
 	public static Bitmap drawableToBitmap (Drawable drawable) {
@@ -632,23 +628,114 @@ public class Global extends Application {
 		}
 	}
 
-	//
-	// Write the list of firewall apps object to file
-	//
-	public static void writeAppListFWFile(Map<Integer, AppInfo> appData) {
-		File appDir = mContext.getFilesDir();
-		File mypath = new File(appDir, "fwapps");
-		try {
-			FileOutputStream myFile = new FileOutputStream(mypath);
-			// FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-			ObjectOutputStream os = new ObjectOutputStream(myFile);
-			os.writeObject(appData);
-			os.close();
-			myFile.close();
-		} catch (IOException e) {
-			Logs.myLog("Cannot write FW objects to: " + "fwapps", 3);
+	// Notify of new app...but what if in GUI at the time...
+
+	public static String createNewAppNotificationChannel() {
+		// Create the NotificationChannel, but only on API 26+ because
+		// the NotificationChannel class is new and not in the support library
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			String channelId = "FW2";
+			String channelName = "FW New App";
+			newAppNotificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
+			// omitted the LED color
+			newAppNotificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
+			newAppNotificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+			notificationManager.createNotificationChannel(newAppNotificationChannel);
+			return channelId;
+		} else {
+			return "none";
 		}
 	}
 
+
+	public static void notifyNewApp(String myText) {
+		Intent intent = new Intent(mContext, ActivityMain.class);
+		// use System.currentTimeMillis() to have a unique ID for the pending intent
+		// PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
+
+		Logs.myLog("Notify New App: " + myText , 2);
+
+		PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0,
+				new Intent(mContext, ActivityMain.class), PendingIntent.FLAG_UPDATE_CURRENT);
+				// new Intent(mContext, ActivityLogs.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+		if (Build.VERSION.SDK_INT >= 26) {
+
+			if (newAppNotificationChannel == null) {
+				createNewAppNotificationChannel();
+			}
+
+			Notification n = new NotificationCompat.Builder(mContext, newAppNotificationChannel.getId())
+					.setContentTitle(Global.getContext().getString(R.string.app_name))
+					.setContentText("New Apps Found!")
+					.setSmallIcon(R.drawable.ic_lock_idle_lock2)
+					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
+					.setStyle(new NotificationCompat.BigTextStyle()
+							.bigText(myText))
+
+					/*
+					.setStyle(
+							new NotificationCompat.InboxStyle()
+									.addLine(myText)
+									.addLine("line ""))
+
+					 */
+					.setAutoCancel(true)
+					.setContentIntent(contentIntent)
+					.setAutoCancel(true).build();
+			notificationManager.notify(200, n); // we overwrite the current notitication
+
+
+
+		} else {
+
+			// build notification
+			// the addAction re-use the same intent to keep the example short
+			Notification n = new NotificationCompat.Builder(mContext)
+					.setContentTitle(Global.getContext().getString(R.string.app_name))
+					.setContentText("New Apps Found!")
+
+					.setStyle(new NotificationCompat.BigTextStyle()
+							.bigText(myText))
+
+					/*
+					.setStyle(
+							new NotificationCompat.InboxStyle()
+									.addLine(myText)
+									.addLine("line ""))
+
+					 */
+					.setSmallIcon(R.drawable.ic_lock_idle_lock2)
+					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
+					.setAutoCancel(true)
+					.setContentIntent(contentIntent).build();
+			notificationManager.notify(200, n); // we overwrite the current notitication
+		}
+
+
+
+	}
+
+
+	public static void updateMyWidgets() {
+
+		Logs.myLog("Updating widgets", 2);
+
+		// Basically all widgets receive all the broadcasts
+		// No matter how many Widgets there are the Widget Class
+		// is only called once.
+
+		// This is why you should cycle through Widget IDs in the
+		// widget itself - not from here...
+
+		Intent updateIntent = new Intent();
+		// Action has to be a ACTION_APPWIDGET_* otherwise Widgets
+		// will not receive
+		updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+		updateIntent.putExtra(WIDGET_ACTION, "ALL");
+		mContext.sendBroadcast(updateIntent);
+
+	}
 
 }
