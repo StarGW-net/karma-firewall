@@ -12,7 +12,7 @@ After a number of years I have stopped releasing Karma Firewall on Google Play a
 
 Or get the latest versions directly from my Website:
 
-v62 = e78a51b2e497bf00c86f4083579cde71e4a61f2e0014c0d367268f794cce877e [net.stargw.fok-release-v62.apk] (https://www.stargw.net/android/apks/net.stargw.fok-release-v62.apk)
+v62 = 10f216e7eeb456f01011d1cbb4390382240946cdaa816412f9a7384a254ab820 [net.stargw.fok-release-v62.apk] (https://www.stargw.net/android/apks/net.stargw.fok-release-v62.apk)
 
 <br>
 

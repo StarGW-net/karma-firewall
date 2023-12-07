@@ -514,9 +514,11 @@ public class ServiceFW extends VpnService implements Runnable {
                 // Sleep
                 Thread.sleep(300000); // 300 secs
                 Logs.myLog("Service Checking apps HERE...", 2);
-                // How does this affect battery life
-                // especially in sleep mode...
-                Global.getAppList();
+                if (Global.getAppList() == false)
+                {
+                    Logs.myLog("Service Housekeeping restart...", 1);
+                    startVPN(Global.FIREWALL_RESTART);
+                }
             } catch (InterruptedException e) {
                 Logs.myLog("Firewall Service Thread Interrupted.", 2);
                 return; // actually leave the thread!!

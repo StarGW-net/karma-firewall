@@ -236,10 +236,8 @@ public class Global extends Application {
 		thread.start();
 	}
 
-	public static void getAppList()
+	public static boolean getAppList()
 	{
-
-
 
 		Global.appListState = APPLIST_DOING;
 
@@ -395,9 +393,7 @@ public class Global extends Application {
 			notifyNewApp(newAppText);
 		}
 
-		// Always resart to be safe!
-		if (Global.getFirewallState() == true)
-		// if ( (restart == true) && (Global.getFirewallState() == true) )
+		if ( (restart == true) && (Global.getFirewallState() == true) )
 		{
 			Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
 			serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
@@ -419,7 +415,7 @@ public class Global extends Application {
 
 		Global.updateMyWidgets();
 
-		return;
+		return restart;
 
 	}
 
