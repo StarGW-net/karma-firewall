@@ -404,9 +404,8 @@ public class Global extends Application {
 			Global.getContext().startService(serviceIntent);
 		}
 
-		// Write to file - STEVE
+		// Write to file?
 		// writeAppListFWFile(Global.appListFW);
-
 
 		// Finished building - let others build appList
 		Global.appListState = APPLIST_DONE;
@@ -542,48 +541,12 @@ public class Global extends Application {
 				appListFW.put(app.UID2,appFW); // replacing?
 			}
 
-			/*
-			if (appFW.packageNames == null) {
-				Logs.myLog("Got UID, package name " + packageName, 3 );
-				appFW.packageNames = new ArrayList<String>();
-				appFW.packageNames.add(packageName);
-				appFW.appNames = new ArrayList<String>();
-				appFW.appNames.add(app.name);
-				appFW.system = app.system;
-				appFW.enabled = app.enabled; // But if multiple UID? OR? AND?
-			} else {
-				boolean exists = false;
-				for (int i =0; i< appFW.packageNames.size(); i++)
-				{
-					String ap = appFW.packageNames.get(i);
-					if ( (ap != null) && (ap.equals(packageName)) )
-					{
-						// Logs.myLog("Existing package name " + packageName, 2 );
-						exists = true;
-						break;
-					}
-				}
-				if (exists == false) {
-					// Logs.myLog("Existing UID, New package name " + packageName, 2 );
-					appFW.packageNames.add(packageName);
-					appFW.appNames.add(app.name); // CRASH HERE
-					// java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.util.ArrayList.add(java.lang.Object)' on a null object reference
-				}
-				// OR the system and enabled states
-				appFW.system = appFW.system | app.system; // OR
-				appFW.enabled = appFW.enabled | app.enabled; // AND
-			}
-*/
-
-			// STEVE
 			if (appFW.appInfoExtra.size() > 1) {
 				// appFW.icon = getContext().getResources().getDrawable(R.drawable.android);
 				appFW.name = "_Apps (UID " + app.UID2 + ")";
 			}
 
-
 			appFW.internet = true;
-
 
 			getIcon(pManager,appFW); // assigns it to app
 
