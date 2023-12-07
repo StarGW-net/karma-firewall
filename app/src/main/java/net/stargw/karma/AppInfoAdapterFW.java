@@ -3,8 +3,10 @@ package net.stargw.karma;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,6 +97,13 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         // text1.setText(apps.name + " (" + apps.UID2 +")");
         // text2.setText(apps.packageName);
 
+        if (apps.enabled == false)
+        {
+            text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            text1.setPaintFlags( text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+        }
+
         // Load icons once on the fly didn't really work
         // Global.getIcon(pManager,apps);
         if (apps.icon != null)
@@ -177,7 +186,9 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         LinearLayout expand = (LinearLayout) v.findViewById(R.id.activity_main_row_app_expand_text);
         expand.removeAllViews();
 
-        if (app.packageNames.size() == 1)
+        Log.w("STEVE","app = " + app.name);
+
+        if (app.appInfoExtra.size() == 1)
         {
             TextView text2 = new TextView(Global.getContext());
             text2.setTextColor(Color.WHITE);
@@ -187,10 +198,20 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
             text2.setSingleLine(true);
             text2.setMaxLines(1);
 
-            text2.setText("(" + app.packageNames.get(0) + ")");
+            text2.setText("(" + app.appInfoExtra.get(0).packageFQDN + ")");
+
+            if (app.appInfoExtra.get(0).packageEnabled == false)
+            {
+                text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+            }
+
             expand.addView(text2);
+            TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
+            text4.setText("UID: " + app.UID2);
         } else {
-            for(int i = 0; i < app.packageNames.size(); i++) {
+            for(int i = 0; i < app.appInfoExtra.size(); i++) {
                 // TextView text1 = (TextView) v.findViewById(R.id.activity_main_row_app_packname);
                 // TextView text1 = new TextView(Global.getContext(),null, R.layout.activity_main_row_expand_text);
                 TextView text1 = new TextView(Global.getContext());
@@ -200,7 +221,7 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 text1.setSingleLine(true);
                 text1.setMaxLines(1);
 
-                text1.setText(app.appNames.get(i));
+                text1.setText(app.appInfoExtra.get(i).packageName);
                 expand.addView(text1);
 
                 TextView text2 = new TextView(Global.getContext());
@@ -211,13 +232,25 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 text2.setSingleLine(true);
                 text2.setMaxLines(1);
 
-                text2.setText("(" + app.packageNames.get(i) + ")");
+                text2.setText("(" + app.appInfoExtra.get(i).packageFQDN + ")");
+
+                if (app.appInfoExtra.get(i).packageEnabled == false)
+                {
+                    // Logs.myLog("CONTAINS: " + packageName, 2 );
+                    text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    text1.setPaintFlags(text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                    text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                }
+
                 expand.addView(text2);
             }
+            TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
+            text4.setText("");
         }
 
-        TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
-        text4.setText("UID: " + app.UID2);
+
 
     }
 
@@ -261,8 +294,8 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                             filteredItems.add(app);
                         }
                         // Loop over package names...
-                        for(int i2 = 0; i2 < app.appNames.size(); i2++) {
-                            if( (app.appNames.get(i2).toString().toLowerCase().contains(constraint) ) ) {
+                        for(int i2 = 0; i2 < app.appInfoExtra.size(); i2++) {
+                            if( (app.appInfoExtra.get(i2).packageName.toLowerCase().contains(constraint) ) ) {
                                 boolean newApp = true;
                                 for(int i4 = 0; i4 < filteredItems.size() ; i4++)
                                 {

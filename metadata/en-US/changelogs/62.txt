@@ -1,0 +1,2 @@
+• Handle disabled (sleeping) apps
+• Bug fixes

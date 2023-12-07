@@ -3,6 +3,7 @@ package net.stargw.karma;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -81,6 +82,13 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         }
         // Lookup view for data population
         TextView text1 = (TextView) convertView.findViewById(R.id.activity_main_row_app_name);
+
+        if (apps.enabled == false)
+        {
+            text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            text1.setPaintFlags( text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+        }
 
         TextView text2 = (TextView) convertView.findViewById(R.id.activity_main_row_app_traffic);
         text2.setText("");
@@ -170,7 +178,7 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         LinearLayout expand = (LinearLayout) v.findViewById(R.id.activity_main_row_app_expand_text);
         expand.removeAllViews();
 
-        if (app.packageNames.size() == 1)
+        if (app.appInfoExtra.size() == 1)
         {
             TextView text2 = new TextView(Global.getContext());
             text2.setTextColor(Color.WHITE);
@@ -180,10 +188,21 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
             text2.setSingleLine(true);
             text2.setMaxLines(1);
 
-            text2.setText("(" + app.packageNames.get(0) + ")");
+            text2.setText("(" + app.appInfoExtra.get(0).packageName + ")");
+
+            if (app.appInfoExtra.get(0).packageEnabled == false)
+            {
+                text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+            }
+
             expand.addView(text2);
+
+            TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
+            text4.setText("UID: " + app.UID2);
         } else {
-            for(int i = 0; i < app.packageNames.size(); i++) {
+            for(int i = 0; i < app.appInfoExtra.size(); i++) {
                 // TextView text1 = (TextView) v.findViewById(R.id.activity_main_row_app_packname);
                 // TextView text1 = new TextView(Global.getContext(),null, R.layout.activity_main_row_expand_text);
                 TextView text1 = new TextView(Global.getContext());
@@ -193,7 +212,7 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
                 text1.setSingleLine(true);
                 text1.setMaxLines(1);
 
-                text1.setText(app.appNames.get(i));
+                text1.setText(app.appInfoExtra.get(i).packageName);
                 expand.addView(text1);
 
                 TextView text2 = new TextView(Global.getContext());
@@ -204,9 +223,22 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
                 text2.setSingleLine(true);
                 text2.setMaxLines(1);
 
-                text2.setText("(" + app.packageNames.get(i) + ")");
+                text2.setText("(" + app.appInfoExtra.get(i).packageFQDN + ")");
+
+                if (app.appInfoExtra.get(i).packageEnabled == false)
+                {
+                    // Logs.myLog("CONTAINS: " + packageName, 2 );
+                    text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    text1.setPaintFlags(text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                    text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+                }
+
                 expand.addView(text2);
             }
+            TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
+            text4.setText("");
         }
 
 /*
@@ -216,8 +248,7 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
         TextView text3 = (TextView) v.findViewById(R.id.activity_main_row_app_bytesIn);
         text3.setText(Global.getContext().getString(R.string.app_data_boot_down, appDown));
 */
-        TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
-        text4.setText("UID: " + app.UID2);
+
 
     }
 
@@ -258,6 +289,7 @@ public class AppInfoAdapterApps extends ArrayAdapter<AppInfo> implements Filtera
                         AppInfo app = appsOriginal.get(i);
                         // Logs.myLog("Filter match: " + constraint + " v " + app.packageName , 3);
                         if( (app.name.toString().toLowerCase().contains(constraint) ) ) {
+                            // would need to loop over for this...
                         // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
                             filteredItems.add(app);
                         }

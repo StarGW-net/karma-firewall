@@ -4,6 +4,9 @@ import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AppInfo implements Cloneable, Serializable {
 
@@ -17,8 +20,14 @@ public class AppInfo implements Cloneable, Serializable {
     // So we make it transient and exclude it
     public transient Drawable icon;
 
-    public ArrayList<String> packageNames = null;
-    public ArrayList<String> appNames = null;
+    // I should combine these into a class and include enabled
+    // public ArrayList<String> packageNames = null;
+    // public ArrayList<String> appNames = null;
+
+    List<AppInfoExtra> appInfoExtra;
+
+    // static Map<Integer, String> packageDetail = new ConcurrentHashMap<Integer, String>();
+
 
     public int UID2; // No UID 1
 
@@ -31,9 +40,8 @@ public class AppInfo implements Cloneable, Serializable {
 
     public boolean system;
     public boolean internet = false;
-    public boolean enabled = true;
 
-    public boolean newApp = true;
+    public boolean enabled = true;
 
     public boolean expandView = false;
 

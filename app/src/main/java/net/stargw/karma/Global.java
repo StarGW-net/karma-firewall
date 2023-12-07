@@ -43,11 +43,11 @@ public class Global extends Application {
 	private static Context mContext;
 
 	// static ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
-	//static Map<Integer, AppInfo> appListFW = new HashMap<Integer, AppInfo>();
+	// static Map<Integer, AppInfo> appListFW = new HashMap<Integer, AppInfo>();
 	// static ArrayList<HashMap<Integer, AppInfo>> appListFW = new ArrayList<HashMap<Integer, AppInfo>>(); // wow!!
 
 	// This is the main one and only app list
-	// This must be populated before the firewall cans start
+	// This must be populated before the firewall can start
 	// This must be populated before the GUI can be shown
 	static Map<Integer, AppInfo> appListFW = new ConcurrentHashMap<Integer, AppInfo>();
 
@@ -253,6 +253,10 @@ public class Global extends Application {
 			int key = it.next();
 			AppInfo app = Global.appListFW.get(key);
 			app.flush = true;
+			app.expandView = false;
+			// app.appInfoExtra = null; // these may have changed...
+			// this will double up...
+			app.appInfoExtra = new ArrayList<AppInfoExtra>();
 		}
 
 		PackageInfo packageInfo;
@@ -320,6 +324,39 @@ public class Global extends Application {
 
 		}
 
+		it = Global.appListFW.keySet().iterator();
+
+		//
+		// Now we have all the apps back check FW status
+		//
+		while (it.hasNext()) {
+			// Get if its firewalled or not.
+			int key = it.next();
+			AppInfo thisApp = Global.appListFW.get(key);
+			if (p.contains("FW-" + thisApp.UID2)) {
+				thisApp.fw = p.getInt("FW-" + thisApp.UID2, 20);
+				Logs.myLog("Known App" + thisApp.name, 3);
+			} else {
+				// write key as false - lets us track apps
+				if (p.getBoolean("settingsFirstRun", true) == false) {
+					// New app!
+					Logs.myLog("New App: " + thisApp.name, 3);
+					int autoFW = p.getInt("settingsAutoFW", 0);
+					if (autoFW == 0) {
+						p.edit().putInt("FW-" + thisApp.UID2, 25).apply();
+						thisApp.fw = 25;
+					} else { // Mark for auto firewalling
+						p.edit().putInt("FW-" + thisApp.UID2, 45).apply();
+						thisApp.fw = 45;
+					}
+				} else {
+					p.edit().putInt("FW-" + thisApp.UID2, 10).apply();
+					Logs.myLog("UnKnown App" + thisApp.name, 3);
+					thisApp.fw = 10;
+				}
+			}
+		}
+
 		// Notify new apps
 		String newAppText = "";
 
@@ -327,6 +364,9 @@ public class Global extends Application {
 
 		boolean restart = false;
 
+		//
+		// Check for new Apps
+		//
 		while (it.hasNext())
 		{
 			int key = it.next();
@@ -355,7 +395,9 @@ public class Global extends Application {
 			notifyNewApp(newAppText);
 		}
 
-		if ( (restart == true) && (Global.getFirewallState() == true) )
+		// Always resart to be safe!
+		if (Global.getFirewallState() == true)
+		// if ( (restart == true) && (Global.getFirewallState() == true) )
 		{
 			Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
 			serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
@@ -440,6 +482,7 @@ public class Global extends Application {
 		}
 
 		app.enabled = applicationInfo.enabled;
+
 		app.UID2 = applicationInfo.uid; // change to a string??
 
 		// String[] parts = applicationInfo.processName.split(":");
@@ -470,47 +513,44 @@ public class Global extends Application {
 		}
 
 
-		// We leave getting the icons to the GUI on demand
-
-		try {
-			app.icon = pManager.getApplicationIcon(packageName);
-		} catch (Exception e) {
-			app.icon = getContext().getResources().getDrawable(R.drawable.android);
-			Logs.myLog("Cannot get icon!", 3);
-		}
-
-
-		// app.icon = getIcon(pManager,app);
-
-		// app.icon = null;
-
-		if ( (app.internet == true) && (app.enabled == true) )
+		// if ( (app.internet == true) && (app.enabled == true) )
+		if (app.internet == true) // we care about disabled apps now
 		{
 			AppInfo appFW;
+
+			AppInfoExtra appInfoExtra = new AppInfoExtra();
+			appInfoExtra.packageEnabled = app.enabled;
+			appInfoExtra.packageFQDN = packageName;
+			appInfoExtra.packageName = app.name;
+
+
 			if (appListFW.containsKey(app.UID2)) {
 				appFW = appListFW.get(app.UID2);
-				// Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 2 );
-				// appFW.icon = getContext().getDrawable(R.drawable.android);
-
+				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 2 );
+				appFW.appInfoExtra.add(appInfoExtra);
+				appFW.enabled = appFW.enabled | app.enabled;
+				appFW.system = appFW.system | app.system;
 			} else {
+				Logs.myLog("New UID " + app.UID2 + " " + packageName, 2 );
 				appFW = new AppInfo();
-				appFW.icon = app.icon;
-				// appFW.icon = null;
 				appFW.name = app.name;
-
+				appFW.UID2 = app.UID2;
+				appFW.enabled = app.enabled;
+				appFW.system = app.system;
+				appFW.appInfoExtra =   new ArrayList<AppInfoExtra>();
+				appFW.appInfoExtra.add(appInfoExtra);
 				appListFW.put(app.UID2,appFW); // replacing?
 			}
 
-			appFW.UID2 = app.UID2;
-
-			// How to handle removal of a system package with shared UID ???
-
+			/*
 			if (appFW.packageNames == null) {
 				Logs.myLog("Got UID, package name " + packageName, 3 );
 				appFW.packageNames = new ArrayList<String>();
 				appFW.packageNames.add(packageName);
 				appFW.appNames = new ArrayList<String>();
 				appFW.appNames.add(app.name);
+				appFW.system = app.system;
+				appFW.enabled = app.enabled; // But if multiple UID? OR? AND?
 			} else {
 				boolean exists = false;
 				for (int i =0; i< appFW.packageNames.size(); i++)
@@ -529,50 +569,23 @@ public class Global extends Application {
 					appFW.appNames.add(app.name); // CRASH HERE
 					// java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.util.ArrayList.add(java.lang.Object)' on a null object reference
 				}
+				// OR the system and enabled states
+				appFW.system = appFW.system | app.system; // OR
+				appFW.enabled = appFW.enabled | app.enabled; // AND
 			}
+*/
 
-			if (appFW.packageNames.size() > 1) {
+			// STEVE
+			if (appFW.appInfoExtra.size() > 1) {
 				// appFW.icon = getContext().getResources().getDrawable(R.drawable.android);
 				appFW.name = "_Apps (UID " + app.UID2 + ")";
 			}
 
-			/*
-			if (appFW.appNames == null) {
-				appFW.appNames = new ArrayList<String>();
-			}
-			appFW.appNames.add(app.name);
-			*/
 
-			appFW.enabled = app.enabled;
 			appFW.internet = true;
-			appFW.system = app.system;
 
-			// Get if its firewalled or not.
-			if (p.contains("FW-" + app.UID2))
-			{
-				appFW.fw = p.getInt("FW-" + app.UID2, 20);
-				Logs.myLog("Known App" + app.name, 3);
-			} else {
-				// write key as false - lets us track apps
 
-				if (p.getBoolean("settingsFirstRun",true) == false) {
-					// New app!
-					Logs.myLog("New App: " + app.name, 3);
-
-					int autoFW = p.getInt("settingsAutoFW",0);
-					if (autoFW == 0) {
-						p.edit().putInt("FW-" + app.UID2, 25).apply();
-						appFW.fw = 25;
-					} else { // Mark for auto firewalling
-						p.edit().putInt("FW-" + app.UID2, 45).apply();
-						appFW.fw = 45;
-					}
-				} else {
-					p.edit().putInt("FW-" + app.UID2, 10).apply();
-					Logs.myLog("UnKnown App" + app.name, 3);
-					appFW.fw = 10;
-				}
-			}
+			getIcon(pManager,appFW); // assigns it to app
 
 /*
 			Logs.myLog("App Name:      " + app.name, 3);
@@ -580,6 +593,7 @@ public class Global extends Application {
 			// Logs.myLog("Process Name:  " + app.processName, 3);
 			Logs.myLog("App UID2:      " + app.UID2, 3);
 			Logs.myLog("System:        " + app.system, 3);
+			Logs.myLog("Enabled:        " + app.enabled, 3);
 */
 			appFW.flush = false;
 
@@ -612,20 +626,28 @@ public class Global extends Application {
 
 	public static void getIcon (PackageManager pManager, AppInfo apps)
 	{
-		if (apps.icon == null) {
-			// Logs.myLog("App get icon: " + apps.name, 1);
 
-			if (apps.packageNames.size() > 1) {
-				apps.icon = getContext().getResources().getDrawable(R.drawable.android);
-			} else {
+		// Logs.myLog("App get icon: " + apps.name, 1);
+		if ( (apps.icon == null) && (apps.appInfoExtra.size() > 2) )
+		{
+			// More than two packages share same UID so we have
+			// already assigned the system icon.
+			return;
+		}
+
+		if (apps.appInfoExtra.size() > 1) {
+			apps.icon = getContext().getResources().getDrawable(R.drawable.android);
+		} else {
+			if (apps.icon == null) {
 				try {
-					apps.icon = pManager.getApplicationIcon(apps.packageNames.get(0));
+					apps.icon = pManager.getApplicationIcon(apps.appInfoExtra.get(0).packageFQDN);
 				} catch (Exception e) {
-					apps.icon = getContext().getResources().getDrawable(R.drawable.android);
-					Logs.myLog("Cannot get icon: " + apps.name, 3);
+					apps.icon = getContext().getResources().getDrawable(R.drawable.alert);
+					Logs.myLog("Cannot get icon: " + apps.appInfoExtra.get(0).packageFQDN, 3);
 				}
 			}
 		}
+
 	}
 
 	// Notify of new app...but what if in GUI at the time...
@@ -635,7 +657,7 @@ public class Global extends Application {
 		// the NotificationChannel class is new and not in the support library
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			String channelId = "FW2";
-			String channelName = "FW New App";
+			String channelName = "New App Alert";
 			newAppNotificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
 			// omitted the LED color
 			newAppNotificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);

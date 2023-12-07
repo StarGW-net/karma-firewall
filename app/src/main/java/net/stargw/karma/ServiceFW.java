@@ -149,6 +149,8 @@ public class ServiceFW extends VpnService implements Runnable {
         if (Global.settingsSubnet != "")
         {
 
+            Logs.myLog("Trying to Exclude Local Subnet: " + Global.settingsSubnet, 2);
+
             boolean error = false;
 
             String[] parts2 = Global.settingsSubnet.split("/");
@@ -169,25 +171,27 @@ public class ServiceFW extends VpnService implements Runnable {
             try {
                 InetAddress start = InetAddress.getByName("0.0.0.0");
                 for (IPUtil.CIDR exclude : listExclude) {
-                    Logs.myLog("Exclude: " + exclude.getStart().getHostAddress() + "..." + exclude.getEnd().getHostAddress(), 2);
-                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(exclude.getStart())))
+                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(exclude.getStart()))) {
                         try {
                             Logs.myLog("Include: " + include.address + "/" + include.prefix, 2);
                             builder.addRoute(include.address, include.prefix);
                         } catch (Throwable ex) {
-                            Logs.myLog("Exclude Fail: " + ex.toString(), 2);
+                            Logs.myLog("Include Fail: " + ex.toString(), 2);
                             error = true;
                         }
+                    }
+                    Logs.myLog("Exclude: " + exclude.getStart().getHostAddress() + "..." + exclude.getEnd().getHostAddress(), 2);
                     start = IPUtil.plus1(exclude.getEnd());
                     InetAddress end = InetAddress.getByName("255.255.255.255");
-                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(end)))
+                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(end))) {
                         try {
                             Logs.myLog("Include: " + include.address + "/" + include.prefix, 2);
                             builder.addRoute(include.address, include.prefix);
                         } catch (Throwable ex) {
-                            Logs.myLog("Exclude Fail: " + ex.toString(), 2);
+                            Logs.myLog("Include Fail: " + ex.toString(), 2);
                             error = true;
                         }
+                    }
                 }
 
                 if (error == true)
@@ -230,28 +234,30 @@ public class ServiceFW extends VpnService implements Runnable {
                 Logs.myLog("FW Cannot FW App: "  + Global.getContext().getString(R.string.package_name), 2);
                 e.printStackTrace();
             }
-            //
-            if ((app.enabled) && (app.internet)) {
+
+            if ((app.internet) && (app.appInfoExtra != null)) {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
                 {
-                    for(int i = 0; i < app.packageNames.size(); i++) {
-                        Logs.myLog("Block App: " + app.UID2 + " " + app.packageNames.get(i), 1);
+                    for (int i = 0; i < app.appInfoExtra.size(); i++) {
+                        Logs.myLog("Block App: " + app.UID2 + " " + app.appInfoExtra.get(i).packageFQDN, 1);
                     }
                 } else {
                     if (app.fw >= 30) {
-                        for(int i = 0; i < app.packageNames.size(); i++) {
+                        // App is firewalled by package name, but in reality
+                        // it is by UID
+                        for (int i = 0; i < app.appInfoExtra.size(); i++) {
                             try {
-                                builder.addAllowedApplication(app.packageNames.get(i));
-                                Logs.myLog("Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
+                                builder.addAllowedApplication(app.appInfoExtra.get(i).packageFQDN);
+                                Logs.myLog("Block App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 1);
                                 // Logs.myLog("Block App: " + app.appNames.get(i) + " " + app.UID2 + " " + app.packageNames.get(i), 1);
                             } catch (PackageManager.NameNotFoundException e) {
-                                Logs.myLog("Cannot Block App: " + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 1);
+                                Logs.myLog("Cannot Block App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 1);
                                 e.printStackTrace();
                             }
                         }
                     } else {
-                        for(int i = 0; i < app.packageNames.size(); i++) {
-                            Logs.myLog("Allow App: "  + app.appNames.get(i) + " [" + app.packageNames.get(i) + "]", 2);
+                        for (int i = 0; i < app.appInfoExtra.size(); i++) {
+                            Logs.myLog("Allow App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 2);
                             // Logs.myLog("Allow App: "  + app.UID2 + " " + app.packageNames.get(i), 2);
                             // builder.addDisallowedApplication(app.packageNames.get(i));
                         }
