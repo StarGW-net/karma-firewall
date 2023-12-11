@@ -1,10 +1,10 @@
 Karma Firewall is the safest, most trusted Android Firewall. 
 
-
+<table><tr><td>
 <img src="https://github.com/StarGW-net/karma-firewall/blob/main/metadata/en-US/images/phoneScreenshots/1.png?raw=true"
-     border=1
      alt="Karma Firewall"
      height="320">
+</td></tr></table>
 
 Karma FW is completely different from all other VPN Firewalls. Karma FW requires NO Internet permissions. Without permissions CANNOT send any data anywhere. We intercept no allowed user traffic. The ONLY permission Karma FW requires is start on boot!
 
@@ -15,8 +15,6 @@ After a number of years I have stopped releasing Karma Firewall on Google Play a
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/net.stargw.fok/)
-
-<br>
 
 Or get the latest versions directly from my Website:
 
