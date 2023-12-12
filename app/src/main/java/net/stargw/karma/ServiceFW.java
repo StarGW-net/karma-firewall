@@ -524,7 +524,8 @@ public class ServiceFW extends VpnService implements Runnable {
                 if (Global.getAppList() == false)
                 {
                     Logs.myLog("Service Housekeeping restart...", 1);
-                    startVPN(Global.FIREWALL_RESTART);
+                    Logs.myLog("NOT restarting. See Issue #16 :-(", 1);
+                    // startVPN(Global.FIREWALL_RESTART);
                 }
             } catch (InterruptedException e) {
                 Logs.myLog("Firewall Service Thread Interrupted.", 2);

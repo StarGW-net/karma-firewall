@@ -14,18 +14,8 @@ After a number of years I have stopped releasing Karma Firewall on Google Play a
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/net.stargw.fok/)
+     height="80">](https://www.stargw.net/android/apks.html?net.stargw.fok)
 
-Or get the latest versions directly from my Website:
-
-v62 = 10f216e7eeb456f01011d1cbb4390382240946cdaa816412f9a7384a254ab820
-https://www.stargw.net/android/apks/net.stargw.fok-release-v62.apk
-
-<br>
-
-v61 = 870f35f741f48810a30d6fbf878818c8813a020621e4a8c314d6e855065e42b7 https://www.stargw.net/android/apks/net.stargw.fok-release-v61.apk
-    
-<br>
 Buy Developer a Coffee:
 <br>
 
