@@ -333,7 +333,7 @@ public class Global extends Application {
 			AppInfo thisApp = Global.appListFW.get(key);
 			if (p.contains("FW-" + thisApp.UID2)) {
 				thisApp.fw = p.getInt("FW-" + thisApp.UID2, 20);
-				Logs.myLog("Known App" + thisApp.name, 3);
+				Logs.myLog("Known App: " + thisApp.name, 3);
 			} else {
 				// write key as false - lets us track apps
 				if (p.getBoolean("settingsFirstRun", true) == false) {
@@ -349,7 +349,7 @@ public class Global extends Application {
 					}
 				} else {
 					p.edit().putInt("FW-" + thisApp.UID2, 10).apply();
-					Logs.myLog("UnKnown App" + thisApp.name, 3);
+					Logs.myLog("UnKnown App: " + thisApp.name, 3);
 					thisApp.fw = 10;
 				}
 			}
