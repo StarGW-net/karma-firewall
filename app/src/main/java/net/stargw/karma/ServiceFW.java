@@ -310,6 +310,7 @@ public class ServiceFW extends VpnService implements Runnable {
                 vpnInterface.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                Logs.myLog("Problem closing VPN interface", 2);
             }
             vpnInterface = null;
         }
@@ -330,6 +331,10 @@ public class ServiceFW extends VpnService implements Runnable {
             errorText = "Firewall Argument Exception";
             Logs.myLog(errorText + ": " + ex3, 2);
             vpnInterface = null;
+        } catch (Exception ex4) {
+            errorText = "Firewall Argument Exception";
+            Logs.myLog(errorText + ": " + ex4, 2);
+            vpnInterface = null;
         }
 
         // Sometimes the VPN will return null even when prepared.
@@ -349,6 +354,8 @@ public class ServiceFW extends VpnService implements Runnable {
                 notifyFirewallState(String.format(Global.getContext().getString(R.string.notify_firewall_fail2),errorText));
             }
         } else {
+
+            Logs.myLog("Created VPN interface", 3);
 
             if (firewallCommand.equals(Global.FIREWALL_START)) {
                 Logs.myLog("Firewall Enabled!", 1);
@@ -517,7 +524,8 @@ public class ServiceFW extends VpnService implements Runnable {
                 if (Global.getAppList() == false)
                 {
                     Logs.myLog("Service Housekeeping restart...", 1);
-                    startVPN(Global.FIREWALL_RESTART);
+                    Logs.myLog("NOT restarting. See Issue #16 :-(", 1);
+                    // startVPN(Global.FIREWALL_RESTART);
                 }
             } catch (InterruptedException e) {
                 Logs.myLog("Firewall Service Thread Interrupted.", 2);
@@ -529,6 +537,9 @@ public class ServiceFW extends VpnService implements Runnable {
 
     private void notifyFirewallState(String message)
     {
+
+        Logs.myLog("notifyFirewallState:" + message, 2);
+
         Intent intent = new Intent(this, ActivityMain.class);
         // use System.currentTimeMillis() to have a unique ID for the pending intent
         // PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
