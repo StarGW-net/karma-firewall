@@ -272,7 +272,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         // Runs TWICE on startup. WHY? WHY? WHY?
         Logs.myLog("Activity Main App Resumed", 2);
 
-        // Get a  list of apps a current data?
         screenRefresh();
         updateFirewallStateDisplay(false);
 
@@ -1114,7 +1113,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             AppInfo app = Global.appListFW.get(key);
 
             // check system is viewable now...
-            if ((app.enabled) && (app.internet) && (app.system == Global.settingsEnableExpert) ) {
+            if ( (app.internet) && (app.system == Global.settingsEnableExpert) ) {
                 app.fw = state;
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
                 p.edit().putInt("FW-" + app.UID2, app.fw).apply();
@@ -1122,7 +1121,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 Logs.myLog(app.name + ": done!" ,3);
 
                 adapter.notifyDataSetChanged(); // maybe need this
-
 
 
             }
@@ -1321,7 +1319,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         // notify?
         // adapter.notifyDataSetChanged();
 
-        setListViewFocus();
+        // setListViewFocus();
 
         dialogNewApps.setContentView(R.layout.dialog_records);
 

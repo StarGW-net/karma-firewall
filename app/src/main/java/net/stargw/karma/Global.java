@@ -2,6 +2,7 @@ package net.stargw.karma;
 
 import java.util.ArrayList;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,10 @@ public class Global extends Application {
 		mContext = this;
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		Global.createNotificationChannel("FW1", "FW Start Alert");
+		Global.createNotificationChannel("FW2", "New App Alert");
+		Global.createNotificationChannel("FW3", "FW Warning");
 
 		Global.getAppListBackground();
 	}
@@ -251,18 +256,26 @@ public class Global extends Application {
 			int key = it.next();
 			AppInfo app = Global.appListFW.get(key);
 			app.flush = true;
-			app.expandView = false;
+			// app.expandView = false;
 			// app.appInfoExtra = null; // these may have changed...
 			// this will double up...
-			app.appInfoExtra = new ArrayList<AppInfoExtra>();
+			// app.appInfoExtra = new ArrayList<AppInfoExtra>();
 		}
 
 		PackageInfo packageInfo;
 		List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
 
+		/*
+		// Package name for UID 0 returns null - we cannot firewall root
+		String root = Global.getContext().getPackageManager().getNameForUid(0);
+		if (root != null)
+		{
+			Logs.myLog("Root = " + root, 3);
+		}
+		*/
+
 		Global.packageMax = packageInfoList.size();
 		Global.packageCurrent = 0;
-
 
 		for (int i = 0; i < packageInfoList.size(); i++)
 		{
@@ -437,13 +450,16 @@ public class Global extends Application {
 		// app.versionName = packageInfo.versionName;
 		// app.sourcePath = applicationInfo.sourceDir;
 
+		Logs.myLog("=========\nPackage: " + packageName + " UID = " + applicationInfo.uid, 3 );
+
+
 		app.internet = false;
 		try {
 			packageInfo = Global.getContext().getPackageManager().getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
 
 			if (packageInfo.requestedPermissions == null)
 			{
-
+				Logs.myLog("No permissions!", 3 );
 			} else {
 
 				for (String permission : packageInfo.requestedPermissions) {
@@ -467,6 +483,7 @@ public class Global extends Application {
 		if (app.internet == false)
 		{
 			// We are not interested in package
+			Logs.myLog("No Internet - Ignore!", 3 );
 			return;
 		}
 
@@ -522,7 +539,6 @@ public class Global extends Application {
 			if (appListFW.containsKey(app.UID2)) {
 				appFW = appListFW.get(app.UID2);
 				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 2 );
-				appFW.appInfoExtra.add(appInfoExtra);
 				appFW.enabled = appFW.enabled | app.enabled;
 				appFW.system = appFW.system | app.system;
 			} else {
@@ -532,9 +548,13 @@ public class Global extends Application {
 				appFW.UID2 = app.UID2;
 				appFW.enabled = app.enabled;
 				appFW.system = app.system;
-				appFW.appInfoExtra =   new ArrayList<AppInfoExtra>();
-				appFW.appInfoExtra.add(appInfoExtra);
+				appFW.appInfoExtra = new HashMap<String, AppInfoExtra>();
 				appListFW.put(app.UID2,appFW); // replacing?
+			}
+
+			if (!(appFW.appInfoExtra.containsKey(appInfoExtra.packageFQDN)))
+			{
+				appFW.appInfoExtra.put(appInfoExtra.packageFQDN,appInfoExtra);
 			}
 
 			if (appFW.appInfoExtra.size() > 1) {
@@ -557,6 +577,7 @@ public class Global extends Application {
 			appFW.flush = false;
 
 		}
+
 
 		return;
 	}
@@ -599,35 +620,32 @@ public class Global extends Application {
 		} else {
 			if (apps.icon == null) {
 				try {
-					apps.icon = pManager.getApplicationIcon(apps.appInfoExtra.get(0).packageFQDN);
+					apps.icon = pManager.getApplicationIcon(apps.appInfoExtra.get(apps.appInfoExtra.keySet().toArray()[0]).packageFQDN);
 				} catch (Exception e) {
 					apps.icon = getContext().getResources().getDrawable(R.drawable.alert);
-					Logs.myLog("Cannot get icon: " + apps.appInfoExtra.get(0).packageFQDN, 3);
+					Logs.myLog("Cannot get icon: " + apps.appInfoExtra.get(apps.appInfoExtra.keySet().toArray()[0]).packageFQDN, 3);
 				}
 			}
 		}
 
 	}
 
-	// Notify of new app...but what if in GUI at the time...
-
-	public static String createNewAppNotificationChannel() {
+	public static NotificationChannel createNotificationChannel(String channelId, String channelName) {
 		// Create the NotificationChannel, but only on API 26+ because
 		// the NotificationChannel class is new and not in the support library
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			String channelId = "FW2";
-			String channelName = "New App Alert";
-			newAppNotificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
+			// String channelId = "FW2";
+			// String channelName = "New App Alert";
+			NotificationChannel notificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
 			// omitted the LED color
-			newAppNotificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
-			newAppNotificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-			notificationManager.createNotificationChannel(newAppNotificationChannel);
-			return channelId;
+			notificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
+			notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+			notificationManager.createNotificationChannel(notificationChannel);
+			return notificationChannel;
 		} else {
-			return "none";
+			return null;
 		}
 	}
-
 
 	public static void notifyNewApp(String myText) {
 		Intent intent = new Intent(mContext, ActivityMain.class);
@@ -644,7 +662,7 @@ public class Global extends Application {
 		if (Build.VERSION.SDK_INT >= 26) {
 
 			if (newAppNotificationChannel == null) {
-				createNewAppNotificationChannel();
+				newAppNotificationChannel = createNotificationChannel("FW2","New App Alert");
 			}
 
 			Notification n = new NotificationCompat.Builder(mContext, newAppNotificationChannel.getId())
@@ -654,14 +672,6 @@ public class Global extends Application {
 					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
 					.setStyle(new NotificationCompat.BigTextStyle()
 							.bigText(myText))
-
-					/*
-					.setStyle(
-							new NotificationCompat.InboxStyle()
-									.addLine(myText)
-									.addLine("line ""))
-
-					 */
 					.setAutoCancel(true)
 					.setContentIntent(contentIntent)
 					.setAutoCancel(true).build();
@@ -676,17 +686,8 @@ public class Global extends Application {
 			Notification n = new NotificationCompat.Builder(mContext)
 					.setContentTitle(Global.getContext().getString(R.string.app_name))
 					.setContentText("New Apps Found!")
-
 					.setStyle(new NotificationCompat.BigTextStyle()
 							.bigText(myText))
-
-					/*
-					.setStyle(
-							new NotificationCompat.InboxStyle()
-									.addLine(myText)
-									.addLine("line ""))
-
-					 */
 					.setSmallIcon(R.drawable.ic_lock_idle_lock2)
 					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
 					.setAutoCancel(true)

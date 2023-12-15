@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterable {
@@ -205,9 +206,9 @@ public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterab
             text2.setSingleLine(true);
             text2.setMaxLines(1);
 
-            text2.setText("(" + app.appInfoExtra.get(0).packageFQDN + ")");
+            text2.setText("(" + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN + ")");
 
-            if (app.appInfoExtra.get(0).packageEnabled == false)
+            if (app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageEnabled == false)
             {
                 text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
@@ -219,7 +220,12 @@ public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterab
             TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
             text4.setText("UID: " + app.UID2);
         } else {
-            for(int i = 0; i < app.appInfoExtra.size(); i++) {
+            Iterator<String> it = app.appInfoExtra.keySet().iterator();
+
+            while (it.hasNext())
+            {
+                String key = it.next();
+
                 // TextView text1 = (TextView) v.findViewById(R.id.activity_main_row_app_packname);
                 // TextView text1 = new TextView(Global.getContext(),null, R.layout.activity_main_row_expand_text);
                 TextView text1 = new TextView(Global.getContext());
@@ -229,7 +235,7 @@ public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterab
                 text1.setSingleLine(true);
                 text1.setMaxLines(1);
 
-                text1.setText(app.appInfoExtra.get(i).packageName);
+                text1.setText(app.appInfoExtra.get(key).packageName);
                 expand.addView(text1);
 
                 TextView text2 = new TextView(Global.getContext());
@@ -240,9 +246,9 @@ public class AppInfoAdapterNew extends ArrayAdapter<AppInfo> implements Filterab
                 text2.setSingleLine(true);
                 text2.setMaxLines(1);
 
-                text2.setText("(" + app.appInfoExtra.get(i).packageFQDN + ")");
+                text2.setText("(" + app.appInfoExtra.get(key).packageFQDN + ")");
 
-                if (app.appInfoExtra.get(i).packageEnabled == false)
+                if (app.appInfoExtra.get(key).packageEnabled == false)
                 {
                     // Logs.myLog("CONTAINS: " + packageName, 2 );
                     text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

@@ -65,16 +65,18 @@ public class ServiceFW extends VpnService implements Runnable {
         Log.w(TAG, "Starting = " + message);
 
 
-        // For Oreo
+        // For Oreo+
         if (Build.VERSION.SDK_INT >= 26) {
-            // Log.w(TAG, "Booting Android API26+");
-            String channelId = createBootNotificationChannel();
+            // String channelId = createBootNotificationChannel();
+
+            NotificationChannel notificationChannel = Global.createNotificationChannel("FW1","FW Start Alert");
+
             int icon = R.drawable.ic_lock_idle_lock2;
 
             PendingIntent pIntent = PendingIntent.getActivity(this, 0,
                     new Intent(this, ActivityMain.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Notification n = new Notification.Builder(this, channelId)
+            Notification n = new Notification.Builder(this, notificationChannel.getId())
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
                     .setContentText(message)
                     .setSmallIcon(icon)
@@ -506,6 +508,7 @@ public class ServiceFW extends VpnService implements Runnable {
     @Override
     public void onDestroy() {
         Logs.myLog("Firewall Service destroyed.", 2);
+        notifyFirewallState("Firewall destroyed by Android!");
         Global.setFirewallState(false);
         Global.updateMyWidgets();
         sendAppBroadcast(Global.FIREWALL_STATE_CHANGE);
@@ -545,29 +548,41 @@ public class ServiceFW extends VpnService implements Runnable {
         // PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
 
         PendingIntent pIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, ActivityLogs.class), PendingIntent.FLAG_UPDATE_CURRENT);
+                new Intent(this, ActivityMain.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
         Logs.myLog(message , 1);
-
-        // build notification
-        // the addAction re-use the same intent to keep the example short
 
         int icon = R.drawable.alert;
         if(Global.getFirewallState()) {
             icon = R.drawable.ic_lock_idle_lock2;
         }
 
-        Notification n  = new Notification.Builder(this)
-                .setContentTitle(Global.getContext().getString(R.string.app_name))
-                .setContentText(message)
-                .setSmallIcon(icon)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.fw7))
-                .setAutoCancel(true)
-                .setContentIntent(pIntent).build();
+        if (Build.VERSION.SDK_INT >= 26) {
 
+            NotificationChannel notificationChannel = Global.createNotificationChannel("FW3", "FW Warning");
 
-        notificationManager.notify(666, n);
+            Notification n = new Notification.Builder(this, notificationChannel.getId())
+                    .setContentTitle(Global.getContext().getString(R.string.app_name))
+                    .setContentText(message)
+                    .setSmallIcon(icon)
+                    .setAutoCancel(true)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
+                    .setContentIntent(pIntent).build();
 
+            notificationManager.notify(555, n);
+
+        } else {
+            Notification n = new Notification.Builder(this)
+                    .setContentTitle(Global.getContext().getString(R.string.app_name))
+                    .setContentText(message)
+                    .setSmallIcon(icon)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.fw7))
+                    .setAutoCancel(true)
+                    .setContentIntent(pIntent).build();
+
+            notificationManager.notify(555, n);
+
+        }
 
     }
 

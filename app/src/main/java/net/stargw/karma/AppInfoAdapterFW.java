@@ -1,10 +1,14 @@
 package net.stargw.karma;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterable {
 
@@ -198,20 +203,44 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
             text2.setSingleLine(true);
             text2.setMaxLines(1);
 
-            text2.setText("(" + app.appInfoExtra.get(0).packageFQDN + ")");
+            text2.setText("(" + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN + ")");
 
-            if (app.appInfoExtra.get(0).packageEnabled == false)
+            if (app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageEnabled == false)
             {
                 text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
                 text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
             }
-
+            text2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Logs.myLog("Clicked for detail: " + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN,1);
+                    Global.focusUID = app.UID2;
+                    // AppInfo app = getItem(position);
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN));
+                    getContext().startActivity(intent);
+                }
+            });
+            text2.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Karma", app.appInfoExtra.keySet().toArray()[0].toString());
+                    clipboard.setPrimaryClip(clip);
+                    return true;
+                }
+            });
             expand.addView(text2);
             TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
             text4.setText("UID: " + app.UID2);
         } else {
-            for(int i = 0; i < app.appInfoExtra.size(); i++) {
+            Iterator<String> it = app.appInfoExtra.keySet().iterator();
+
+            while (it.hasNext())
+            {
+                String key = it.next();
+
                 // TextView text1 = (TextView) v.findViewById(R.id.activity_main_row_app_packname);
                 // TextView text1 = new TextView(Global.getContext(),null, R.layout.activity_main_row_expand_text);
                 TextView text1 = new TextView(Global.getContext());
@@ -221,7 +250,7 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 text1.setSingleLine(true);
                 text1.setMaxLines(1);
 
-                text1.setText(app.appInfoExtra.get(i).packageName);
+                text1.setText(app.appInfoExtra.get(key).packageName);
                 expand.addView(text1);
 
                 TextView text2 = new TextView(Global.getContext());
@@ -232,9 +261,9 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 text2.setSingleLine(true);
                 text2.setMaxLines(1);
 
-                text2.setText("(" + app.appInfoExtra.get(i).packageFQDN + ")");
+                text2.setText("(" + app.appInfoExtra.get(key).packageFQDN + ")");
 
-                if (app.appInfoExtra.get(i).packageEnabled == false)
+                if (app.appInfoExtra.get(key).packageEnabled == false)
                 {
                     // Logs.myLog("CONTAINS: " + packageName, 2 );
                     text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -243,7 +272,26 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                     text1.setPaintFlags(text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
                     text2.setPaintFlags(text2.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
                 }
-
+                final String f = key;
+                text2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // AppInfo app = getItem(position);
+                        Global.focusUID = app.UID2;
+                        Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + app.appInfoExtra.get(f).packageFQDN));
+                        getContext().startActivity(intent);
+                    }
+                });
+                text2.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("Karma", app.appInfoExtra.get(f).packageFQDN);
+                        clipboard.setPrimaryClip(clip);
+                        return true;
+                    }
+                });
                 expand.addView(text2);
             }
             TextView text4 = (TextView) v.findViewById(R.id.activity_main_row_app_uid);
