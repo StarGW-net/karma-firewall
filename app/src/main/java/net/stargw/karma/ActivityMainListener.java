@@ -13,7 +13,5 @@ public interface ActivityMainListener
 {
     public void changeSelectedItem(int pos);
 
-    public void setListViewFocus();
-
     // public void taskAppListBuildFinished();
 }

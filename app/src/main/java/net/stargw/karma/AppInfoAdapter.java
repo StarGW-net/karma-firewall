@@ -4,13 +4,11 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +22,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterable {
+public class AppInfoAdapter extends ArrayAdapter<AppInfo> implements Filterable {
 
     ActivityMainListener listener;
 
@@ -33,16 +31,12 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
     Context mContext;
 
-    // PackageManager pManager;
-
-    public AppInfoAdapterFW(Context context, ArrayList<AppInfo> apps) {
+    public AppInfoAdapter(Context context, ArrayList<AppInfo> apps) {
         super(context, 0, apps);
 
-        listener = (ActivityMain) context;
-
         mContext = context;
+        updateFull();
 
-        // pManager = mContext.getPackageManager();
     }
 
 
@@ -60,22 +54,6 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         super.notifyDataSetChanged();
     }
 
-    /*
-    @Override
-    public int getCount() {
-        return 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-    */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -94,13 +72,10 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
         text2.setTextColor(Color.WHITE);
 
         ImageView icon = (ImageView) convertView.findViewById(R.id.activity_main_row_app_icon);
-        // ToggleButton tog = (ToggleButton) convertView.findViewById(R.id.rowToggle);
         ImageView tog = (ImageView) convertView.findViewById(R.id.activity_main_row_fwstate_icon);
 
         // Populate the data into the template view using the data object
         text1.setText(apps.name);
-        // text1.setText(apps.name + " (" + apps.UID2 +")");
-        // text2.setText(apps.packageName);
 
         if (apps.enabled == false)
         {
@@ -109,37 +84,32 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
             text1.setPaintFlags( text1.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
         }
 
-        // Load icons once on the fly didn't really work
-        // Global.getIcon(pManager,apps);
         if (apps.icon != null)
         {
             icon.setImageDrawable(apps.icon);
         }
 
-        // tog.setChecked(apps.kill);
         tog.setVisibility(View.VISIBLE);
 
         if (apps.fw >= 30)
         {
             tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.fw_app_off));
-            // tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.no3));
         } else {
             tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.fw_app_on));
-            // tog.setImageDrawable(getContext().getResources().getDrawable(R.drawable.yes3));
         }
 
         final int pos = position;
         tog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos);
+                action(pos);
             }
         });
 
         text1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.changeSelectedItem(pos);
+                action(pos);
             }
         });
 
@@ -176,22 +146,17 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
     }
 
+    public void action(int pos)
+    {
+        listener.changeSelectedItem(pos);
+    }
+
     private void expandApp(View v, int position) {
 
         AppInfo app = getItem(position);
 
-        /*
-        long up = TrafficStats.getUidTxBytes(app.UID2);
-        long down = TrafficStats.getUidRxBytes(app.UID2);
-
-        String appUp = showTraffic(up, true);
-        String appDown = showTraffic(down, false);
-        */
-
         LinearLayout expand = (LinearLayout) v.findViewById(R.id.activity_main_row_app_expand_text);
         expand.removeAllViews();
-
-        Log.w("STEVE","app = " + app.name);
 
         if (app.appInfoExtra.size() == 1)
         {
@@ -215,8 +180,6 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 @Override
                 public void onClick(View v) {
                     Logs.myLog("Clicked for detail: " + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN,1);
-                    Global.focusUID = app.UID2;
-                    // AppInfo app = getItem(position);
                     Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.parse("package:" + app.appInfoExtra.get(app.appInfoExtra.keySet().toArray()[0]).packageFQDN));
                     getContext().startActivity(intent);
@@ -241,8 +204,6 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
             {
                 String key = it.next();
 
-                // TextView text1 = (TextView) v.findViewById(R.id.activity_main_row_app_packname);
-                // TextView text1 = new TextView(Global.getContext(),null, R.layout.activity_main_row_expand_text);
                 TextView text1 = new TextView(Global.getContext());
                 text1.setTextColor(Color.WHITE);
                 text1.setEllipsize(TextUtils.TruncateAt.END);
@@ -265,7 +226,6 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
                 if (app.appInfoExtra.get(key).packageEnabled == false)
                 {
-                    // Logs.myLog("CONTAINS: " + packageName, 2 );
                     text1.setPaintFlags(text1.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                     text2.setPaintFlags(text2.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 } else {
@@ -276,8 +236,6 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                 text2.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // AppInfo app = getItem(position);
-                        Global.focusUID = app.UID2;
                         Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                         intent.setData(Uri.parse("package:" + app.appInfoExtra.get(f).packageFQDN));
                         getContext().startActivity(intent);
@@ -302,6 +260,17 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
     }
 
+    public void clearExpanded()
+    {
+        /*
+        for(int i = 0, l = appsOriginal.size(); i < l; i++)
+            appsOriginal.get(i).expandView = false;
+*/
+        for(int i = 0, l = appsSorted.size(); i < l; i++)
+            appsSorted.get(i).expandView = false;
+
+    }
+
     @Override
     public Filter getFilter() {
 
@@ -322,13 +291,14 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
 
             }
 
+
+
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
 
-                FilterResults results = new FilterResults();
-
                 constraint = constraint.toString().toLowerCase();
                 FilterResults result = new FilterResults();
+
                 if(constraint != null && constraint.toString().length() > 0)
                 {
                     ArrayList<AppInfo> filteredItems = new ArrayList<AppInfo>();
@@ -337,13 +307,21 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                     {
                         AppInfo app = appsOriginal.get(i);
                         // Logs.myLog("Filter match: " + constraint + " v " + app.packageName , 3);
-                        if( (app.name.toString().toLowerCase().contains(constraint) ) ) {
-                        // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
+
+                        app.expandView = false;
+
+                        if( (app.name.toLowerCase().contains(constraint) ) ) {
                             filteredItems.add(app);
                         }
                         // Loop over package names...
-                        for(int i2 = 0; i2 < app.appInfoExtra.size(); i2++) {
-                            if( (app.appInfoExtra.get(i2).packageName.toLowerCase().contains(constraint) ) ) {
+                        Iterator<String> it = app.appInfoExtra.keySet().iterator();
+
+                        while (it.hasNext())
+                        {
+                            String key = it.next();
+                            if( (app.appInfoExtra.get(key).packageFQDN.toLowerCase().contains(constraint) ) ) {
+                                // Logs.myLog("Filter match: " + constraint + " v " + app.appInfoExtra.get(key).packageFQDN.toLowerCase() , 3);
+
                                 boolean newApp = true;
                                 for(int i4 = 0; i4 < filteredItems.size() ; i4++)
                                 {
@@ -354,7 +332,9 @@ public class AppInfoAdapterFW extends ArrayAdapter<AppInfo> implements Filterabl
                                     }
                                 }
                                 if (newApp == true) {
-                                    filteredItems.add(app); // miltiple??
+                                    app.expandView = true;
+                                    Logs.myLog("Filter Expand: " + app.name , 3);
+                                    filteredItems.add(app);
                                 }
                             }
                         }

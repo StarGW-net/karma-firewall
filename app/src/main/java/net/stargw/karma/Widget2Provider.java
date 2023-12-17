@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -147,12 +148,12 @@ public class Widget2Provider extends AppWidgetProvider {
     {
         super.onReceive(context, intent);
 
-        // Log.w("KarmaWidget2","onReceive");
+        Log.w("KarmaWidget2","onReceive");
 
         if ((intent.getAction() != null)) {
-            // Log.w("KarmaWidget2", "Widget Action = " + intent.getAction());
+            Log.w("KarmaWidget2", "Widget Action = " + intent.getAction());
         } else {
-            // Log.w("KarmaWidget2", "Widget No Action, doing nothing!");
+            Log.w("KarmaWidget2", "Widget No Action, doing nothing!");
             return;
         }
 

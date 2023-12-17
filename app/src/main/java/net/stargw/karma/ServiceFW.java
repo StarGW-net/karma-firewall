@@ -46,6 +46,8 @@ public class ServiceFW extends VpnService implements Runnable {
         Global.getSettings();
         Logs.getLoggingLevel();
 
+        Logs.myLog("ServiceFW - OnRCreate()", 2);
+
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     }
@@ -55,15 +57,11 @@ public class ServiceFW extends VpnService implements Runnable {
     public void SonCreate(String flag, String message) {
 
         Global.getSettings();
+        Logs.getLoggingLevel();
 
-        // appInfo = new ArrayList<AppInfo>();
-
-        // notificationManager = NotificationManagerCompat.from(this);
+        Logs.myLog("ServiceFW - SonCreate(): " + message, 2);
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        Log.w(TAG, "Starting = " + message);
-
 
         // For Oreo+
         if (Build.VERSION.SDK_INT >= 26) {
@@ -88,46 +86,22 @@ public class ServiceFW extends VpnService implements Runnable {
             // Log.w(TAG, "foreground notification");
         }
 
-        // Log.w(TAG, "Boot building an App List Steve");
-        // Global.getAppList();
         // App list will be built by Global.onCreate
         // Service will rebuild every few mins
         startVPN(flag);
 
-        // booted = false;
-
-        Logs.getLoggingLevel();
         Logs.myLog("Firewall Service created.", 2);
 
     }
 
-
-    private String createBootNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "FW";
-            String channelName = "FW Start Alert";
-            NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
-            // omitted the LED color
-            channel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-            notificationManager.createNotificationChannel(channel);
-            return channelId;
-        } else {
-            return "none";
-        }
-    }
-
-
-
     private void sendAppBroadcast(String message) {
+
+        Logs.myLog("ServiceFW - sendAppBroadcast(): " + message, 2);
+
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(message);
 
         sendBroadcast(broadcastIntent);
-
-        Log.w("FWWService",  "update widget:" + message);
 
         Global.updateMyWidgets();
 
@@ -135,6 +109,7 @@ public class ServiceFW extends VpnService implements Runnable {
 
     private Builder buildVPN(String firewallCommand)
     {
+        Logs.myLog("ServiceFW - buildVPN()", 2);
 
         Builder builder = new Builder();
 
@@ -148,70 +123,15 @@ public class ServiceFW extends VpnService implements Runnable {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         Global.settingsSubnet = p.getString("settingsSubnet", "");
 
+        // Add an IPv4 subnet
         if (Global.settingsSubnet != "")
         {
-
-            Logs.myLog("Trying to Exclude Local Subnet: " + Global.settingsSubnet, 2);
-
-            boolean error = false;
-
-            String[] parts2 = Global.settingsSubnet.split("/");
-            int mask = 24;
-            try {
-                mask = Integer.parseInt(parts2[1]);
-            } catch (Exception e) {
-                error = true;
-            }
-
-            List<IPUtil.CIDR> listExclude = new ArrayList<>();
-            // listExclude.add(new IPUtil.CIDR("10.0.0.0", 24)); // localhost
-            listExclude.add(new IPUtil.CIDR(parts2[0], mask));
-
-            Collections.sort(listExclude);
-
-
-            try {
-                InetAddress start = InetAddress.getByName("0.0.0.0");
-                for (IPUtil.CIDR exclude : listExclude) {
-                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(exclude.getStart()))) {
-                        try {
-                            Logs.myLog("Include: " + include.address + "/" + include.prefix, 2);
-                            builder.addRoute(include.address, include.prefix);
-                        } catch (Throwable ex) {
-                            Logs.myLog("Include Fail: " + ex.toString(), 2);
-                            error = true;
-                        }
-                    }
-                    Logs.myLog("Exclude: " + exclude.getStart().getHostAddress() + "..." + exclude.getEnd().getHostAddress(), 2);
-                    start = IPUtil.plus1(exclude.getEnd());
-                    InetAddress end = InetAddress.getByName("255.255.255.255");
-                    for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(end))) {
-                        try {
-                            Logs.myLog("Include: " + include.address + "/" + include.prefix, 2);
-                            builder.addRoute(include.address, include.prefix);
-                        } catch (Throwable ex) {
-                            Logs.myLog("Include Fail: " + ex.toString(), 2);
-                            error = true;
-                        }
-                    }
-                }
-
-                if (error == true)
-                {
-                    // safety
-                    Logs.myLog("Exclude Error: " + Global.settingsSubnet, 2);
-                    Logs.myLog("Excluding nothing!", 2);
-                    builder.addRoute("0.0.0.0", 0);
-                } else {
-                    Logs.myLog("Exclude Local Subnet: " + parts2[0] + "/" + mask, 2);
-                }
-            } catch (UnknownHostException ex) {
-                Logs.myLog("Exclude Error: " + ex.toString(), 2);
-            }
+            addSubnet(builder);
         } else {
             builder.addRoute("0.0.0.0", 0);
         }
 
+        // IPv6
         builder.addRoute("0:0:0:0:0:0:0:0", 0);
 
         if (Global.appListFW == null)
@@ -228,7 +148,6 @@ public class ServiceFW extends VpnService implements Runnable {
             int key = it.next();
             AppInfo app = Global.appListFW.get(key);
 
-            //
             // Add our app to make sure at least one app is blocked
             try {
                 builder.addAllowedApplication(Global.getContext().getString(R.string.package_name));
@@ -247,19 +166,26 @@ public class ServiceFW extends VpnService implements Runnable {
                     if (app.fw >= 30) {
                         // App is firewalled by package name, but in reality
                         // it is by UID
-                        for (int i = 0; i < app.appInfoExtra.size(); i++) {
-                            try {
-                                builder.addAllowedApplication(app.appInfoExtra.get(i).packageFQDN);
-                                Logs.myLog("Block App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 1);
+                        Iterator<String> it2 = app.appInfoExtra.keySet().iterator();
+
+                        while (it2.hasNext())
+                        {
+                            String key2 = it2.next();                            try {
+                                builder.addAllowedApplication(app.appInfoExtra.get(key2).packageFQDN);
+                                Logs.myLog("Block App: " + app.appInfoExtra.get(key2).packageName + " [" + app.appInfoExtra.get(key2).packageFQDN + "]", 1);
                                 // Logs.myLog("Block App: " + app.appNames.get(i) + " " + app.UID2 + " " + app.packageNames.get(i), 1);
                             } catch (PackageManager.NameNotFoundException e) {
-                                Logs.myLog("Cannot Block App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 1);
+                                Logs.myLog("Cannot Block App: " + app.appInfoExtra.get(key2).packageName + " [" + app.appInfoExtra.get(key2).packageFQDN + "]", 1);
                                 e.printStackTrace();
                             }
                         }
                     } else {
-                        for (int i = 0; i < app.appInfoExtra.size(); i++) {
-                            Logs.myLog("Allow App: " + app.appInfoExtra.get(i).packageName + " [" + app.appInfoExtra.get(i).packageFQDN + "]", 2);
+                        Iterator<String> it2 = app.appInfoExtra.keySet().iterator();
+
+                        while (it2.hasNext())
+                        {
+                            String key2 = it2.next();
+                            Logs.myLog("Allow App: " + app.appInfoExtra.get(key2).packageName + " [" + app.appInfoExtra.get(key2).packageFQDN + "]", 2);
                             // Logs.myLog("Allow App: "  + app.UID2 + " " + app.packageNames.get(i), 2);
                             // builder.addDisallowedApplication(app.packageNames.get(i));
                         }
@@ -273,30 +199,94 @@ public class ServiceFW extends VpnService implements Runnable {
         return builder;
     }
 
+    public static void addSubnet(Builder builder)
+    {
+        Logs.myLog("ServiceFW - addSubnet()", 2);
+
+        Logs.myLog("Trying to Exclude Local Subnet: " + Global.settingsSubnet, 2);
+
+        boolean error = false;
+
+        String[] parts2 = Global.settingsSubnet.split("/");
+        int mask = 24;
+        try {
+            mask = Integer.parseInt(parts2[1]);
+        } catch (Exception e) {
+            error = true;
+        }
+
+        List<IPUtil.CIDR> listExclude = new ArrayList<>();
+        // listExclude.add(new IPUtil.CIDR("10.0.0.0", 24)); // localhost
+        listExclude.add(new IPUtil.CIDR(parts2[0], mask));
+
+        Collections.sort(listExclude);
+
+
+        try {
+            InetAddress start = InetAddress.getByName("0.0.0.0");
+            for (IPUtil.CIDR exclude : listExclude) {
+                for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(exclude.getStart()))) {
+                    try {
+                        Logs.myLog("Include: " + include.address + "/" + include.prefix, 3);
+                        builder.addRoute(include.address, include.prefix);
+                    } catch (Throwable ex) {
+                        Logs.myLog("Include Fail: " + ex.toString(), 2);
+                        error = true;
+                    }
+                }
+                Logs.myLog("Exclude: " + exclude.getStart().getHostAddress() + "..." + exclude.getEnd().getHostAddress(), 3);
+                start = IPUtil.plus1(exclude.getEnd());
+                InetAddress end = InetAddress.getByName("255.255.255.255");
+                for (IPUtil.CIDR include : IPUtil.toCIDR(start, IPUtil.minus1(end))) {
+                    try {
+                        Logs.myLog("Include: " + include.address + "/" + include.prefix, 3);
+                        builder.addRoute(include.address, include.prefix);
+                    } catch (Throwable ex) {
+                        Logs.myLog("Include Fail: " + ex.toString(), 2);
+                        error = true;
+                    }
+                }
+            }
+
+            if (error == true)
+            {
+                // safety
+                Logs.myLog("Exclude Error: " + Global.settingsSubnet, 2);
+                Logs.myLog("Excluding nothing!", 2);
+                builder.addRoute("0.0.0.0", 0);
+            } else {
+                Logs.myLog("Exclude Local Subnet: " + parts2[0] + "/" + mask, 2);
+            }
+        } catch (UnknownHostException ex) {
+            Logs.myLog("Exclude Error: " + ex.toString(), 2);
+        }
+    }
+
+
     // Hook to start FW from BOOT
     public static void boot(Context context) {
         Intent serviceIntent = new Intent(context, ServiceFW.class);
         serviceIntent.putExtra("command", Global.FIREWALL_BOOT);
 
-        Log.w(TAG, "boot called");
+        Log.w(TAG, "ServieFW - boot() called");
 
         ContextCompat.startForegroundService(context, serviceIntent);
     }
 
-    // Hook to start FW from BOOT
+    // Hook to replace if running and new package installed
     public static void replace(Context context) {
         Intent serviceIntent = new Intent(context, ServiceFW.class);
         serviceIntent.putExtra("command", Global.FIREWALL_REPLACE);
 
-        Log.w(TAG, "replace called");
+        Log.w(TAG, "ServiceFW - replace() called");
 
         ContextCompat.startForegroundService(context, serviceIntent);
     }
 
     private void startVPN(String firewallCommand) {
 
-        //Global.setFirewallState(false);
-        // effectively a restart
+        Logs.myLog("ServiceFW - startVPN()", 2);
+
         Builder builder = buildVPN(firewallCommand);
 
         if (VpnService.prepare(this) == null)
@@ -398,12 +388,13 @@ public class ServiceFW extends VpnService implements Runnable {
 
             Global.setFirewallState(true);
         }
-        sendAppBroadcast(Global.SCREEN_REFRESH_INTENT );
+        sendAppBroadcast(Global.FIREWALL_STATE_CHANGE);
 
     }
 
     private void stopVPN()
     {
+        Logs.myLog("ServiceFW - stopVPN()", 2);
 
         Global.setFirewallState(false);
         if (vpnInterface != null)
@@ -421,18 +412,18 @@ public class ServiceFW extends VpnService implements Runnable {
             mThread = null;
         }
 
-
-
-        sendAppBroadcast(Global.SCREEN_REFRESH_INTENT );
+        sendAppBroadcast(Global.FIREWALL_STATE_CHANGE);
 
     }
 
     @Override
     public void onRevoke() {
-        Logs.myLog("Firewall Service received OnRevoke!", 2);
+        Logs.myLog("ServiceFW - OnRevoke()", 2);
 
         if (Global.getFirewallState() == true)
         {
+            notifyFirewallState("Firewall revoked by Android!");
+
             Global.setFirewallState(false);
             // Logs.myLog("Firewall Terminated!" , 0);
 
@@ -444,6 +435,8 @@ public class ServiceFW extends VpnService implements Runnable {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        Logs.myLog("ServiceFW - onStartCommand()", 2);
 
         if (intent != null) {
             String command = intent.getStringExtra("command");
@@ -507,17 +500,22 @@ public class ServiceFW extends VpnService implements Runnable {
 
     @Override
     public void onDestroy() {
-        Logs.myLog("Firewall Service destroyed.", 2);
-        notifyFirewallState("Firewall destroyed by Android!");
+        Logs.myLog("ServiceFW - onDestroy()", 2);
+
+        if (Global.getFirewallState() == true) {
+            notifyFirewallState("Firewall destroyed by Android!");
+        }
         Global.setFirewallState(false);
-        Global.updateMyWidgets();
+
         sendAppBroadcast(Global.FIREWALL_STATE_CHANGE);
+
+        Global.updateMyWidgets();
+
         super.onDestroy();
     }
 
     public void run() {
-        // Log.i(TAG, "Started");
-        Logs.myLog("Firewall Service Running.", 2);
+        Logs.myLog("ServiceFW - run()", 2);
 
         while (!(Thread.currentThread().isInterrupted())) {
             try {
@@ -526,8 +524,8 @@ public class ServiceFW extends VpnService implements Runnable {
                 Logs.myLog("Service Checking apps HERE...", 2);
                 if (Global.getAppList() == false)
                 {
-                    Logs.myLog("Service Housekeeping restart...", 1);
-                    Logs.myLog("NOT restarting. See Issue #16 :-(", 1);
+                    Logs.myLog("Service Housekeeping restart...", 3);
+                    Logs.myLog("NOT restarting. See Issue #16 :-(", 3);
                     // startVPN(Global.FIREWALL_RESTART);
                 }
             } catch (InterruptedException e) {
@@ -541,7 +539,7 @@ public class ServiceFW extends VpnService implements Runnable {
     private void notifyFirewallState(String message)
     {
 
-        Logs.myLog("notifyFirewallState:" + message, 2);
+        Logs.myLog("ServiceFW - notifyFirewallState: " + message, 2);
 
         Intent intent = new Intent(this, ActivityMain.class);
         // use System.currentTimeMillis() to have a unique ID for the pending intent
@@ -559,7 +557,7 @@ public class ServiceFW extends VpnService implements Runnable {
 
         if (Build.VERSION.SDK_INT >= 26) {
 
-            NotificationChannel notificationChannel = Global.createNotificationChannel("FW3", "FW Warning");
+            NotificationChannel notificationChannel = Global.createNotificationChannel("FW3", "FW Abort Alert");
 
             Notification n = new Notification.Builder(this, notificationChannel.getId())
                     .setContentTitle(Global.getContext().getString(R.string.app_name))

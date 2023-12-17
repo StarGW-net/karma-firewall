@@ -37,8 +37,8 @@ public class ActivityLogs extends Activity {
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             // Logs.myLog("App Received intent", 2);
-            if (Global.SCREEN_REFRESH_INTENT.equals(intent.getAction())) {
-                Logs.myLog("ActivityLogs Received intent to update screen", 2);
+            if (Global.REBUILD_APPS_DONE.equals(intent.getAction())) {
+                Logs.myLog("ActivityLogs Received REBUILD_APPS_DONE", 2);
                 if (adapter != null) {
                     refreshLogs();
                 }
@@ -427,7 +427,7 @@ public class ActivityLogs extends Activity {
 
         mReceiver = new BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
+        mIntentFilter.addAction(Global.REBUILD_APPS_DONE);
         registerReceiver(mReceiver, mIntentFilter);
 
         viewBlocked = true;

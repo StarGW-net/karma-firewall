@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -65,12 +66,12 @@ public class Widget1Provider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
 
-        // Log.w("KarmaWidget1", "onReceive");
+        Log.w("KarmaWidget1", "onReceive");
 
         if ((intent.getAction() != null)) {
-            // Log.w("KarmaWidget1", "Widget Action = " + intent.getAction());
+            Log.w("KarmaWidget1", "Widget Action = " + intent.getAction());
         } else {
-            // Log.w("KarmaWidget1", "Widget No Action, doing nothing!");
+            Log.w("KarmaWidget1", "Widget No Action, doing nothing!");
             return;
         }
 

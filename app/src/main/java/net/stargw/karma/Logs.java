@@ -291,7 +291,7 @@ public class Logs {
 				byte[] data = logBuffer.getBytes(); 
 				try {
 					logFile.write(data);
-					if (Global.settingsLoggingLevel > 3) { // STEVE
+					if (Global.settingsLoggingLevel > 1) { // STEVE
 						Log.w(TAG, buf);
 					}
 				} catch (Exception e) {

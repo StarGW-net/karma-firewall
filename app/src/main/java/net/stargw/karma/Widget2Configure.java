@@ -37,7 +37,7 @@ import static net.stargw.karma.Global.getContext;
 
 public class Widget2Configure extends Activity implements ActivityMainListener {
 
-    private AppInfoAdapterApps adapter;
+    private AppInfoAdapterWidget adapter;
     private ArrayList<AppInfo> appInfoSource;
     private ListView listView;
     private Context myContext;
@@ -127,6 +127,14 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     }
 
+    @Override
+    protected void onPause() {
+        if(mReceiver != null) {
+            unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
+        super.onPause();
+    }
 
     public void appRefresh()
     {
@@ -147,7 +155,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
         mySort0(appInfoSource);
 
-        adapter = new AppInfoAdapterApps(myContext, appInfoSource);
+        adapter = new AppInfoAdapterWidget(myContext, appInfoSource);
         adapter.updateFull();
         // notify?
         // adapter.notifyDataSetChanged();
@@ -210,7 +218,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
         // boolean state = p.getBoolean("FW-" + thisApp.UID2,false);
 
-         //   views.setImageViewBitmap(R.id.widgit2_icon,thisApp.icon);
+        //   views.setImageViewBitmap(R.id.widgit2_icon,thisApp.icon);
 
         // views.setImageViewResource(R.id.widgit2_icon, R.drawable.fw_w_app);
 
@@ -244,13 +252,6 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     }
 
-    public void setListViewFocus()
-    {
-
-    }
-
-
-
 
     void displayAppDialog()
     {
@@ -275,11 +276,11 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            // Logs.myLog("App Received intent", 2);
+            Logs.myLog("Widget Received intent", 2);
 
             // Log.w("FWMain", "Got Action = " + intent.getAction());
 
-            if (Global.APPS_LOADING_INTENT.equals(intent.getAction())) {
+            if (Global.REBUILD_APPS_IN_PROGRESS.equals(intent.getAction())) {
                 // Logs.myLog("App Loading intent received", 2);
                 // Global.myLog("App Received intent to update saving", 2);
                 // close dialog just in case we are stil showing it
@@ -293,7 +294,8 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                 }
             }
 
-            if (Global.APPS_REFRESH_INTENT.equals(intent.getAction()))
+
+            if (Global.REBUILD_APPS_DONE.equals(intent.getAction()))
             {
                 Logs.myLog("App Received intent to update apps", 2);
                 if (Global.appListFW != null)
@@ -326,7 +328,6 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                     }
 
                     appRefresh();
-                    // createGUI(); // recreate..?
 
                 }
             }
@@ -343,11 +344,9 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
         mReceiver = new Widget2Configure.BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Global.FIREWALL_STATE_CHANGE);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_OFF);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_ON);
-        mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_LOADING_INTENT);
+
+        mIntentFilter.addAction(Global.REBUILD_APPS_DONE);
+        mIntentFilter.addAction(Global.REBUILD_APPS_IN_PROGRESS);
         mIntentFilter.addAction(Global.TOGGLEAPP_REFRESH);
 
         registerReceiver(mReceiver, mIntentFilter);

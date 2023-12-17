@@ -35,16 +35,7 @@ public class BroadcastReceiverBoot extends BroadcastReceiver {
             }
         }
 
-
-
-
-
     }
 
-    private static void refreshAppBroadcast(Context myContext) {
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
-        myContext.sendBroadcast(broadcastIntent);
-    }
 
 }
