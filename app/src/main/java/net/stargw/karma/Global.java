@@ -292,7 +292,7 @@ public class Global extends Application {
 			mContext.sendBroadcast(broadcastIntent);
 		}
 
-		Logs.myLog("getAppList() = " +  Global.appListFW.size() + "(user + system)", 2);
+		Logs.myLog("getAppList() = " +  Global.appListFW.size() + " (user + system)", 2);
 
 		// Tidy up deleted apps - by going through all the shared preference files
 

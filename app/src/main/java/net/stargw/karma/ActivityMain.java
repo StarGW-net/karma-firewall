@@ -81,13 +81,21 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 }
 
                 // Catch for a previous change not processed
-                Logs.myLog("Global.rebuildGUIappList: " + Global.rebuildGUIappList, 2);
+                Logs.myLog("Global.rebuildGUIappList: " + String.valueOf(Global.rebuildGUIappList).toUpperCase(), 2);
 
                 if (Global.rebuildGUIappList == true)
                 {
                     updateAppListCopy();
                 } else {
-                    updateAppListCopyListView();
+                    if (appListCopy == null)
+                    {
+                        // This can happen if service is running, but GUI has only
+                        // just been created
+                        Logs.myLog("appListCopy = null, so need to build", 2);
+                        updateAppListCopy();
+                    } else {
+                        updateAppListCopyListView();
+                    }
                 }
 
             }
@@ -105,30 +113,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     progBar.setProgress(x1);
                 }
             }
-
-/*
-            if (Global.FIREWALL_STATE_CHANGE.equals(intent.getAction()))
-            {
-                Logs.myLog("App Received intent to update firewall state", 2);
-                if (appListCopyAdaptor != null)
-                {
-                    if (Global.getFirewallState() == true) {
-                        if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)) {
-                            Global.infoMessage(myContext, getString(R.string.dialog_warning), getString(R.string.notify_firewall_block_all));
-                        }
-
-                        Iterator<Integer> it = Global.appListFW.keySet().iterator();
-
-                        while (it.hasNext())
-                        {
-                            int key = it.next();
-                            AppInfo thisApp = Global.appListFW.get(key);
-                        }
-                    }
-                    updateFirewallStateDisplay(true);
-                }
-            }
-*/
 
             if (Global.FIREWALL_STATE_CHANGE.equals(intent.getAction()) ) {
                 Logs.myLog("Process Global.FIREWALL_STATE_CHANGE", 2);
@@ -493,8 +477,17 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     {
         Logs.myLog("ActivityMain - updateAppListCopyListView()", 2);
 
+        if (appListCopy == null)
+        {
+            Logs.myLog("updateAppListCopyListView() - appListCopy = null!", 2);
+        } else {
+            Logs.myLog("updateAppListCopyListView() - appListCopy = " + appListCopy.size(), 2);
+        }
+
         if (appListCopyAdaptor != null) {
             appListCopyAdaptor.notifyDataSetChanged();
+        } else {
+            Logs.myLog("updateAppListCopyListView() - appListCopyAdaptor = null!", 2);
         }
     }
 

@@ -88,10 +88,23 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
         {
             logType = 1;
         } else {
-            if (Character.isDigit(apps.charAt(0))) {
+            if ( (apps.length() > 1) && (Character.isDigit(apps.charAt(0))) ) {  // CRASH fixed
                 logType = 2;
             }
         }
+
+        // CRASH
+        /*
+12-17 17:23:43.735  2860  2860 I Dc.IafdService: handleAppError, pkgName : net.stargw.fok, userId : 0, errorType : 2,
+// repeat : true component : com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:604)errorStack:
+// java.lang.StringIndexOutOfBoundsException: length=0; index=0
+12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at java.lang.String.charAt(Native Method)
+12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at net.stargw.karma.LogAdapter.getView(LogAdapter.java:91)
+12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.AbsListView.obtainView(AbsListView.java:2622)
+12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.ListView.makeAndAddView(ListView.java:2224)
+12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.ListView.fillUp(ListView.java:861)
+
+         */
 
 
         String d = "";
