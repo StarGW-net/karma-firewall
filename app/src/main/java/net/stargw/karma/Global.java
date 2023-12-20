@@ -217,7 +217,7 @@ public class Global extends Application {
 		settingsEnableLogcat = p.getBoolean("settingsEnableLogcat", false);
 
 		// DEBUG
-		settingsEnableLogcat = true;
+		// settingsEnableLogcat = true;
 	}
 
 	public static void saveSetings()

@@ -184,7 +184,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         dialogAppRebuildProgress.show();
     }
 
-    /*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -206,7 +205,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         }
 
     }
-*/
+
 
     @Override
     protected void onResume() {
@@ -400,14 +399,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         info.show();
 
                         if (Global.getFirewallState() == false) {
-
-                            Intent serviceIntent = new Intent(myContext, ServiceFW.class);
-                            serviceIntent.putExtra("command", Global.FIREWALL_START);
-                            myContext.startService(serviceIntent);
-                        }
-                        /*
-                        if (Global.getFirewallState() == false) {
                             // turn on the firewall as well..
+                            // If first time user interaction required
                             Logs.myLog("VPNService Prepare...", 2);
                             Intent i = VpnService.prepare(myContext);
                             if (i != null) {
@@ -418,7 +411,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                                 onActivityResult(666, RESULT_OK, null);
                             }
                         }
-                        */
+
 
                         return false;
                     case R.id.action_autofw:
@@ -967,11 +960,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     serviceIntent.putExtra("command", Global.FIREWALL_STOP);
                     Global.getContext().startService(serviceIntent);
                 } else {
-                    Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
-                    serviceIntent.putExtra("command", Global.FIREWALL_START);
-                    Global.getContext().startService(serviceIntent);
-                    /*
-                    // Intent intent = VpnService.prepare(getApplicationContext());
+                    // If first time, user interaction required
                     Logs.myLog("VPNService Prepare...",2);
                     Intent intent = VpnService.prepare(myContext);
                     if (intent != null) {
@@ -981,7 +970,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         Logs.myLog("VPNService Prepare Intent Null",2);
                         onActivityResult(666, RESULT_OK, null);
                     }
-*/
+
                 }
                 info.cancel();
 
