@@ -262,13 +262,10 @@ public class AppInfoAdapter extends ArrayAdapter<AppInfo> implements Filterable 
 
     public void clearExpanded()
     {
-        /*
-        for(int i = 0, l = appsOriginal.size(); i < l; i++)
-            appsOriginal.get(i).expandView = false;
-*/
-        for(int i = 0, l = appsSorted.size(); i < l; i++)
-            appsSorted.get(i).expandView = false;
-
+        if (appsOriginal != null) {
+            for (int i = 0, l = appsOriginal.size(); i < l; i++)
+                appsOriginal.get(i).expandView = false;
+        }
     }
 
     @Override

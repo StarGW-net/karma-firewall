@@ -68,13 +68,12 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         public void onReceive(Context context, Intent intent) {
             Logs.myLog("ActivityMain Received intent: " + intent.getAction(), 3);
 
-            // STEVE - change to a single intent
             if (Global.REBUILD_APPS_DONE.equals(intent.getAction()))
             {
                 Logs.myLog("Process Global.REBUILD_APPS_DONE", 2);
                 // close dialog just in case we are stil showing it
                 if (dialogAppRebuildProgress != null) {
-                    Logs.myLog("Close dialog", 2);
+                    Logs.myLog("Close dialog", 3);
                     dialogAppRebuildProgress.cancel();
                     dialogAppRebuildProgress.dismiss();
                     dialogAppRebuildProgress = null;
@@ -106,10 +105,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 // close dialog just in case we are stil showing it
                 if (dialogAppRebuildProgress != null) {
                     ProgressBar progBar = (ProgressBar) dialogAppRebuildProgress.findViewById(R.id.progBar);
-                    // currentProgress = currentProgress + 1;
                     int x1 = (int) (Global.packageCurrent /(float)Global.packageMax*100);
-                    // Global.myLog("Progress = " + x1, 2);
-                    // Global.myLog("Progress = " + currentProgress + "/" +Global.packageMax, 2);
                     progBar.setProgress(x1);
                 }
             }
@@ -149,7 +145,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         myContext = this;
 
         Global.getSettings();
-        Logs.getLoggingLevel();
+        Logs.getLoggingLevel(); // gets level + housekeeping
 
         // When app starts show user apps
         Global.settingsEnableExpert = false;
@@ -188,6 +184,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         dialogAppRebuildProgress.show();
     }
 
+    /*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -200,7 +197,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         {
             Logs.myLog("Result Code Received: " + resultCode, 2);
             if (resultCode == RESULT_OK) {
-                // ServiceSinkhole.start("prepared", this);
                 Intent serviceIntent = new Intent(myContext, ServiceFW.class);
                 serviceIntent.putExtra("command", Global.FIREWALL_START);
                 myContext.startService(serviceIntent);
@@ -210,7 +206,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         }
 
     }
-
+*/
 
     @Override
     protected void onResume() {
@@ -242,10 +238,16 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         {
             displayAppDialog();
         } else {
+            // Check if we have nothing. Do not display a blank screen
+            if (appListCopy == null)
+            {
+                // appListFW might be populated, but we cannot be
+                // certain it is complete.
+                displayAppDialog();
+            }
             // A full rebuild in the background
             Global.getAppListBackground();
         }
-
 
     }
 
@@ -398,6 +400,13 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         info.show();
 
                         if (Global.getFirewallState() == false) {
+
+                            Intent serviceIntent = new Intent(myContext, ServiceFW.class);
+                            serviceIntent.putExtra("command", Global.FIREWALL_START);
+                            myContext.startService(serviceIntent);
+                        }
+                        /*
+                        if (Global.getFirewallState() == false) {
                             // turn on the firewall as well..
                             Logs.myLog("VPNService Prepare...", 2);
                             Intent i = VpnService.prepare(myContext);
@@ -409,6 +418,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                                 onActivityResult(666, RESULT_OK, null);
                             }
                         }
+                        */
+
                         return false;
                     case R.id.action_autofw:
                         if (autoFW == 1) {
@@ -631,7 +642,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
                     myFilter.setVisibility(View.GONE);
                     myFilter.setText("");
-                    // Logs.myLog("HERE STEVE 2" , 3);
 
                     appListCopyAdaptor.clearExpanded();
 
@@ -957,6 +967,10 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     serviceIntent.putExtra("command", Global.FIREWALL_STOP);
                     Global.getContext().startService(serviceIntent);
                 } else {
+                    Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
+                    serviceIntent.putExtra("command", Global.FIREWALL_START);
+                    Global.getContext().startService(serviceIntent);
+                    /*
                     // Intent intent = VpnService.prepare(getApplicationContext());
                     Logs.myLog("VPNService Prepare...",2);
                     Intent intent = VpnService.prepare(myContext);
@@ -967,7 +981,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         Logs.myLog("VPNService Prepare Intent Null",2);
                         onActivityResult(666, RESULT_OK, null);
                     }
-
+*/
                 }
                 info.cancel();
 
@@ -1287,11 +1301,15 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         newAppsListView.setClickable(true);
 
+
+
         dialogNewApps.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+                newAppsAdaptor.clearExpanded();
                 showNewAppsDismiss(p);
             }
+
         });
 
         Button dialogButton = (Button) dialogNewApps.findViewById(R.id.buttonOK);
@@ -1299,6 +1317,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         dialogButton.setOnClickListener(new View.OnClickListener() {
                 // @Override
                 public void onClick(View v) {
+                    newAppsAdaptor.clearExpanded();
                     showNewAppsDismiss(p);
                 }
             });
@@ -1332,6 +1351,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 }
             }
         }
+
+
+
         dialogNewApps.dismiss();
         dialogNewApps = null;
     }

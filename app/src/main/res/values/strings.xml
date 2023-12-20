@@ -29,6 +29,7 @@
     <string name="activity_logs_menu_detailed">Detailed Logs</string>
     <string name="activity_logs_menu_copy_logs">Copy Logs</string>
     <string name="activity_logs_menu_share_logs">Share Logs</string>
+    <string name="activity_logs_menu_share_logcat">Share Logcat</string>
     <string name="activity_logs_menu_log_level">Set Log Level</string>
     <string name="activity_logs_menu_refresh">Refresh</string>
 

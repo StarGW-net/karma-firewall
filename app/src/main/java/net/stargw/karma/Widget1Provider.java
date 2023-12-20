@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -16,7 +15,7 @@ public class Widget1Provider extends AppWidgetProvider {
 
 
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // Log.w("KarmaWidget1","onUpdate");
+        Logs.myLog("Widget1 - onUpdate()", 3);
         // We update manually
     }
 
@@ -28,7 +27,7 @@ public class Widget1Provider extends AppWidgetProvider {
 
     public void updateGUI(Context context, int appWidgetId)
     {
-        // Log.w("KarmaWidget1",  "updateGUI - Widget ID = " + appWidgetId + " update the display");
+        Logs.myLog("Widget1 - updateGUI() - Widget ID = " + appWidgetId, 3);
 
         // Gets info on itself somehow! Via context?
         RemoteViews views = new RemoteViews(context.getPackageName(), getView());
@@ -66,18 +65,19 @@ public class Widget1Provider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
 
-        Log.w("KarmaWidget1", "onReceive");
+        Logs.myLog("Widget1 - onReceive()", 3);
+
 
         if ((intent.getAction() != null)) {
-            Log.w("KarmaWidget1", "Widget Action = " + intent.getAction());
+            Logs.myLog("Widget1 - onReceive() - Action = " + intent.getAction(), 3);
         } else {
-            Log.w("KarmaWidget1", "Widget No Action, doing nothing!");
+            Logs.myLog("Widget1 - onReceive() - No Action, doing nothing!",3);
             return;
         }
 
         // Toggle the firewall - via specific targeted Intent
         if ((intent.getAction() != null) && (intent.getAction().equals(Global.TOGGLE))) {
-            // Log.w("KarmaWidget1", "KarmaWidget1 Action TOGGLE");
+            Logs.myLog("Widget1 - onReceive() - Action TOGGLE",3);
 
             // Do the ACTION - do not care which widget instance triggered it
             if (Global.getFirewallState() == true) {
@@ -85,10 +85,13 @@ public class Widget1Provider extends AppWidgetProvider {
                 serviceIntent.putExtra("command", Global.FIREWALL_STOP);
                 Global.getContext().startService(serviceIntent);
                 // Log.w("KarmaWidget1", "Action - Turn off");
+                Logs.myLog("Widget1 - onReceive() - Action - Turn off",3);
+
             } else {
                 Intent serviceIntent = new Intent(context, ServiceFW.class);
                 serviceIntent.putExtra("command", Global.FIREWALL_WIDGET);
                 // Log.w("KarmaWidget1", "Action - Start as a foreground service");
+                Logs.myLog("Widget1 - onReceive() - Action - Start as a foreground service",3);
                 ContextCompat.startForegroundService(context, serviceIntent);
             }
             // No need to update widgets - firewall state change will update
@@ -100,9 +103,12 @@ public class Widget1Provider extends AppWidgetProvider {
             AppWidgetManager man = AppWidgetManager.getInstance(context);
             int[] ids = man.getAppWidgetIds(
                     new ComponentName(context, Widget1Provider.class));
+            Logs.myLog("Widget1 - onReceive() - Number of Widgets = " + ids.length,3);
             for (int i = 0; i < ids.length; i++) {
-                    // Log.w("KarmaWidget1", "Updating Widget: " + ids[i]);
-                    updateGUI(context, ids[i]);
+                // Log.w("KarmaWidget1", "Updating Widget: " + ids[i]);
+                Logs.myLog("Widget1 - onReceive() - Updating Widget: " + ids[i],3);
+
+                updateGUI(context, ids[i]);
             }
         }
 

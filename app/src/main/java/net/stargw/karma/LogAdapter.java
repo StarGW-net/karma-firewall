@@ -16,8 +16,8 @@ import java.util.ArrayList;
 
 public class LogAdapter extends ArrayAdapter<String> implements Filterable {
 
-    private ArrayList<String> appsSorted; // for filtering
-    private ArrayList<String> appsOriginal; // for filtering
+    private ArrayList<String> logsSorted; // for filtering
+    private ArrayList<String> logsOriginal; // for filtering
 
     public LogAdapter(Context context, ArrayList<String> apps) {
         super(context, 0, apps);
@@ -28,50 +28,19 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
     public void updateFull()
     {
         // setNotifyOnChange(false);
-        this.appsOriginal = new ArrayList<String>();
+        this.logsOriginal = new ArrayList<String>();
         for(int i = 0, l = getCount(); i < l; i++) {
             String app = getItem(i);
-            this.appsOriginal.add(app);
+            this.logsOriginal.add(app);
         }
         // super.notifyDataSetChanged();
     }
 
-    public String toText()
-    {
-        StringBuilder sb = new StringBuilder();
 
-        for(int i = 0, l = getCount(); i < l; i++) {
-            sb.append(getItem(i) + "\n");
-        }
-
-        return sb.toString();
-    }
-
-    public void remove(int pos)
-    {
-        remove(pos);
-        notifyDataSetChanged();
-    }
-    /*
-    @Override
-    public int getCount() {
-        return 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-    */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        String apps = getItem(position);
+        String logLine = getItem(position);
 
 
         if (convertView == null) {
@@ -84,36 +53,24 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
         // Try to figure out what sort of log it it
         int logType = 0;
 
-        if (apps.contains(" @SW@ "))
+        // Check for empty log line
+        if (!( (logLine == null) || (logLine.length() == 0) ))  // CRASH fixed
         {
-            logType = 1;
-        } else {
-            if ( (apps.length() > 1) && (Character.isDigit(apps.charAt(0))) ) {  // CRASH fixed
-                logType = 2;
+            if (logLine.contains(" @SW@ ")) {
+                logType = 1;
+            } else {
+                if (Character.isDigit(logLine.charAt(0))) {
+                    logType = 2;
+                }
             }
         }
-
-        // CRASH
-        /*
-12-17 17:23:43.735  2860  2860 I Dc.IafdService: handleAppError, pkgName : net.stargw.fok, userId : 0, errorType : 2,
-// repeat : true component : com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:604)errorStack:
-// java.lang.StringIndexOutOfBoundsException: length=0; index=0
-12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at java.lang.String.charAt(Native Method)
-12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at net.stargw.karma.LogAdapter.getView(LogAdapter.java:91)
-12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.AbsListView.obtainView(AbsListView.java:2622)
-12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.ListView.makeAndAddView(ListView.java:2224)
-12-17 17:23:43.735  2860  2860 I Dc.IafdService:        at android.widget.ListView.fillUp(ListView.java:861)
-
-         */
-
-
         String d = "";
         String t = "";
         switch (logType) {
             case 1:
-                int pos = apps.indexOf("@SW@ ");
-                d = apps.substring(0, pos);
-                t = apps.substring(pos+5);
+                int pos = logLine.indexOf("@SW@ ");
+                d = logLine.substring(0, pos);
+                t = logLine.substring(pos+5);
 
                 date1.setText(d);
 
@@ -125,22 +82,22 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
                 break;
 
             case 2: // This is an ADB log
-                d = apps.substring(0, 14);
-                t = apps.substring(19);
+                d = logLine.substring(0, 14);
+                t = logLine.substring(19);
 
                 date1.setText(d);
                 text1.setText(t);
                 break;
 
             default:
-                d = apps;
+                d = logLine;
                 date1.setText("");
                 date1.setVisibility(View.GONE);
                 text1.setText(d);
                 break;
         }
 
-                // Return the completed view to render on screen
+        // Return the completed view to render on screen
         return convertView;
 
     }
@@ -154,11 +111,11 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
-                appsSorted = (ArrayList<String>)results.values;
+                logsSorted = (ArrayList<String>)results.values;
                 notifyDataSetChanged();
                 clear();
-                for(int i = 0, l = appsSorted.size(); i < l; i++)
-                    add(appsSorted.get(i));
+                for(int i = 0, l = logsSorted.size(); i < l; i++)
+                    add(logsSorted.get(i));
                 notifyDataSetInvalidated();
 
                 notifyDataSetChanged();
@@ -176,9 +133,9 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
                 {
                     ArrayList<String> filteredItems = new ArrayList<String>();
 
-                    for(int i = 0, l = appsOriginal.size(); i < l; i++)
+                    for(int i = 0, l = logsOriginal.size(); i < l; i++)
                     {
-                        String app = appsOriginal.get(i);
+                        String app = logsOriginal.get(i);
                         // Logs.myLog("Filter match: " + constraint + " v " + app , 3);
                         if( (app.toLowerCase().contains(constraint) ) ) {
                         // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
@@ -194,8 +151,8 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
                 {
                     synchronized(this)
                     {
-                        result.values = appsOriginal;
-                        result.count = appsOriginal.size();
+                        result.values = logsOriginal;
+                        result.count = logsOriginal.size();
                     }
                 }
                 return result;
