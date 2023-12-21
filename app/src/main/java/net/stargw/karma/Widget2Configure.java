@@ -47,6 +47,9 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     private BroadcastListener mReceiver;
 
+    // When dialog starts show user apps
+    private Boolean enableExpert = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,8 +79,8 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
             }
         });
 
-        // When app starts show user apps
-        Global.settingsEnableExpert = false;
+        // When dialog starts show user apps
+        enableExpert = false;
 
         EditText myFilter = (EditText) findViewById(R.id.activity_main_filter_text);
         myFilter.setVisibility(View.GONE);
@@ -153,7 +156,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
         {
             int key = it.next();
             AppInfo thisApp = Global.appListFW.get(key);
-            if (thisApp.system == Global.settingsEnableExpert) {
+            if (thisApp.system == enableExpert) {
                 appListWidget.add(thisApp);
                 // Log.w("FWWidget2", "Add GUI app: " + thisApp.name);
             }
@@ -373,7 +376,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
         MenuItem item = m.findItem(R.id.action_apps_system);
 
 
-        if (Global.settingsEnableExpert == true) {
+        if (enableExpert == true) {
             item.setTitle(R.string.activity_main_menu_apps_user);
         } else {
             item.setTitle(R.string.activity_main_menu_apps_system);
@@ -395,10 +398,10 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                         startActivity(intent);
                         return true;
                     case R.id.action_apps_system:
-                        if (Global.settingsEnableExpert == true) {
-                            Global.settingsEnableExpert = false;
+                        if (enableExpert == true) {
+                            enableExpert = false;
                         } else {
-                            Global.settingsEnableExpert = true;
+                            enableExpert = true;
                         }
                         Global.saveSetings();
                         updateAppListWidgetListView();

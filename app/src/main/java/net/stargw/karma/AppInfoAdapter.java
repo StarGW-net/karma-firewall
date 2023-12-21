@@ -62,6 +62,7 @@ public class AppInfoAdapter extends ArrayAdapter<AppInfo> implements Filterable 
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_row2, parent, false);
         }
+
         // Lookup view for data population
         TextView text1 = (TextView) convertView.findViewById(R.id.activity_main_row_app_name);
         TextView text2 = (TextView) convertView.findViewById(R.id.activity_main_row_app_traffic);
