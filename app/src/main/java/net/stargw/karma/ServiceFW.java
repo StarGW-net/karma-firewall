@@ -320,7 +320,6 @@ public class ServiceFW extends VpnService implements Runnable {
     public static void replace(Context context) {
 
         Logs.myLog("ServiceFW - replace() called", 2);
-        // Log.w(TAG, "ServiceFW - replace() called");
 
         if (Global.getFirewallState() == true) {
             Intent serviceIntent = new Intent(context, ServiceFW.class);
