@@ -1,0 +1,1 @@
+• Disabled housekeeping restart which was causing a problem on some phones in v62
