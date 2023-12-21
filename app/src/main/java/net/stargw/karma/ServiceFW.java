@@ -340,8 +340,9 @@ public class ServiceFW extends VpnService implements Runnable {
         {
             Logs.myLog("ServiceFW - VPNService prepared.",2);
         } else {
-            Logs.myLog("ServiceFW - VPNService Not prepared",2);
+            Logs.myLog("ServiceFW - VPNService Not prepared",1);
         }
+
         // close an old VPN
         if (vpnInterface != null)
         {
@@ -359,20 +360,20 @@ public class ServiceFW extends VpnService implements Runnable {
             vpnInterface = builder.establish();
         } catch (SecurityException ex) {
             errorText = "ServiceFW - Firewall Security Exception:" + ex;
-            Logs.myLog(errorText + ": " + ex, 2);
+            Logs.myLog(errorText + ": " + ex, 1);
             // Logs.myLog("This is a KNOWN Android bug :-( ", 2);
             vpnInterface = null;
         } catch (IllegalStateException ex2) {
             errorText = "ServiceFW - Firewall State Exception: " + ex2;
-            Logs.myLog(errorText + ": " + ex2, 2);
+            Logs.myLog(errorText + ": " + ex2, 1);
             vpnInterface = null;
         } catch (IllegalArgumentException ex3) {
             errorText = "ServiceFW - Firewall Argument Exception: " + ex3;
-            Logs.myLog(errorText + ": " + ex3, 2);
+            Logs.myLog(errorText + ": " + ex3, 1);
             vpnInterface = null;
         } catch (Exception ex4) {
             errorText = "ServiceFW - Firewall Argument Exception: " + ex4;
-            Logs.myLog(errorText + ": " + ex4, 2);
+            Logs.myLog(errorText + ": " + ex4, 1);
             vpnInterface = null;
         }
 

@@ -213,7 +213,6 @@ public class ActivityLogs extends Activity {
         final Menu m = menuLogs.getMenu();
         MenuItem item;
 
-        // DEBUG ONLY
         item = m.findItem(R.id.action_logcat);
         if (Global.settingsEnableLogcat == true)
         {
@@ -221,8 +220,6 @@ public class ActivityLogs extends Activity {
         } else {
             item.setChecked(false);
         }
-        // DEBUG ONLY
-        item.setVisible(false);
 
         switch (Global.settingsLoggingLevel) {
             case 0:
@@ -267,32 +264,24 @@ public class ActivityLogs extends Activity {
                         refreshLogs();
                         return true;
                     case R.id.action_none:
-                        // change to int
-                        // set
                         Global.settingsLoggingLevel = 0;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
                     case R.id.action_normal:
-                        // change to int
-                        // set
                         Global.settingsLoggingLevel = 1;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
                     case R.id.action_detailed:
-                        // change to int
-                        // set
                         Global.settingsLoggingLevel = 2;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
                     case R.id.action_debug:
-                        // change to int
-                        // set
                         Global.settingsLoggingLevel = 3;
                         Global.saveSetings();
                         logWarn();

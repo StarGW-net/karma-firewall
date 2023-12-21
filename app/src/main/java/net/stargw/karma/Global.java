@@ -216,8 +216,6 @@ public class Global extends Application {
 		settingsSubnet = p.getString("settingsSubnet", "");
 		settingsEnableLogcat = p.getBoolean("settingsEnableLogcat", false);
 
-		// DEBUG
-		// settingsEnableLogcat = true;
 	}
 
 	public static void saveSetings()
