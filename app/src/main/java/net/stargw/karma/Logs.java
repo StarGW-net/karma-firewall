@@ -151,7 +151,7 @@ public class Logs {
 	{
 		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 
-		if (file.length() > 1000000)
+		if (file.length() > 5000000)
 		{
 			clearLog();
 			Logs.myLog("Log file too big. Reset.", 1);

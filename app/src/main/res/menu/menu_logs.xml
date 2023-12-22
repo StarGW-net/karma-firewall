@@ -7,17 +7,20 @@
         <menu>
             <group android:id="@+id/group"
                 android:checkableBehavior="single">
-                <item android:id="@+id/action_none"
+                <item android:id="@+id/action_log_0"
                     android:title="0"
                     android:orderInCategory="100"/>
-                <item android:id="@+id/action_normal"
+                <item android:id="@+id/action_log_1"
                     android:title="1"
                     android:orderInCategory="100"/>
-                <item android:id="@+id/action_detailed"
+                <item android:id="@+id/action_log_2"
                     android:title="2"
                     android:orderInCategory="100"/>
-                <item android:id="@+id/action_debug"
+                <item android:id="@+id/action_log_3"
                     android:title="3"
+                    android:orderInCategory="100"/>
+                <item android:id="@+id/action_log_4"
+                    android:title="4"
                     android:orderInCategory="100"/>
             </group>
         </menu>

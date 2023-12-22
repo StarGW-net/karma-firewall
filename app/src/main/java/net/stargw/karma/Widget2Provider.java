@@ -19,7 +19,7 @@ public class Widget2Provider extends AppWidgetProvider {
     
 
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        Logs.myLog("Widget2 - onUpdate()", 3);
+        Logs.myLog("Widget2 - onUpdate()",4);
         // We update manually
     }
 
@@ -31,7 +31,7 @@ public class Widget2Provider extends AppWidgetProvider {
 
     public void updateGUIAll(Context context)
     {
-        Logs.myLog("Widget2 - updateGUIAll()", 3);
+        Logs.myLog("Widget2 - updateGUIAll()", 4);
 
         // Update all the widgets - we need to do this in case two
         // widgets have the same app on them
@@ -39,10 +39,10 @@ public class Widget2Provider extends AppWidgetProvider {
         AppWidgetManager man = AppWidgetManager.getInstance(context);
         int[] ids = man.getAppWidgetIds(
                 new ComponentName(context, Widget2Provider.class));
-        Logs.myLog("Widget2 - updateGUIAll() - Number of Widgets = " + ids.length,3);
+        Logs.myLog("Widget2 - updateGUIAll() - Number of Widgets = " + ids.length,4);
 
         for (int i = 0; i < ids.length; i++) {
-            Logs.myLog("Widget2 - updateGUIAll () - Updating Widget: " + ids[i], 3);
+            Logs.myLog("Widget2 - updateGUIAll () - Updating Widget: " + ids[i],4);
 
             updateGUI(context, ids[i]);
         }
@@ -50,7 +50,7 @@ public class Widget2Provider extends AppWidgetProvider {
 
     public void updateGUI(Context context, int appWidgetId)
     {
-        Logs.myLog("Widget2 - updateGUI() - Widget ID = " + appWidgetId, 3);
+        Logs.myLog("Widget2 - updateGUI() - Widget ID = " + appWidgetId,4);
 
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
 
@@ -74,7 +74,7 @@ public class Widget2Provider extends AppWidgetProvider {
         {
             // Means we have no record of the Widget
             // Not sure we would ever get here
-            Logs.myLog("Widget2 - updateGUI() - [a] Could not get UID of app!", 3);
+            Logs.myLog("Widget2 - updateGUI() - [a] Could not get UID of app!",4);
 
             views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getContext().getResources().getDrawable(R.drawable.alert)));
             views.setViewVisibility(R.id.widgit2_deny, View.INVISIBLE);
@@ -89,7 +89,7 @@ public class Widget2Provider extends AppWidgetProvider {
         if (state == -1)
         {
             // Widget exists but app has been deleted
-            Logs.myLog("Widget2 - updateGUI() - [a] App no longer exists: " + uid, 3);
+            Logs.myLog("Widget2 - updateGUI() - [a] App no longer exists: " + uid,4);
 
             views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getContext().getResources().getDrawable(R.drawable.alert)));
             views.setViewVisibility(R.id.widgit2_deny, View.INVISIBLE);
@@ -151,12 +151,12 @@ public class Widget2Provider extends AppWidgetProvider {
     {
         super.onReceive(context, intent);
 
-        Logs.myLog("Widget2 - onReceive()", 3);
+        Logs.myLog("Widget2 - onReceive()",4);
 
         if ((intent.getAction() != null)) {
-            Logs.myLog("Widget2 - onReceive() - Action = " + intent.getAction(), 3);
+            Logs.myLog("Widget2 - onReceive() - Action = " + intent.getAction(),4);
         } else {
-            Logs.myLog("Widget2 - onReceive() - No Action, doing nothing!",3);
+            Logs.myLog("Widget2 - onReceive() - No Action, doing nothing!",4);
             return;
         }
 
@@ -165,7 +165,7 @@ public class Widget2Provider extends AppWidgetProvider {
         if ((intent.getAction() != null) && (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(intent.getAction())))
         {
             String action = intent.getStringExtra(Global.WIDGET_ACTION);
-            Logs.myLog("Widget2 - onReceive() - getStringExtra: " + action,3);
+            Logs.myLog("Widget2 - onReceive() - getStringExtra: " + action,4);
 
             updateGUIAll(context);
             /*
@@ -178,7 +178,7 @@ public class Widget2Provider extends AppWidgetProvider {
 
         // These come direct from Intents, not Broadcasts
         if ( (intent.getAction() != null) && (intent.getAction().equals(Global.TOGGLEAPP))) {
-            Logs.myLog("Widget2 - onReceive() - Action TOGGLEAPP",3);
+            Logs.myLog("Widget2 - onReceive() - Action TOGGLEAPP",4);
             // Loop through all Widgets of this class - toggling?
             // do we need to - if two of same app widgets!
 
@@ -189,7 +189,7 @@ public class Widget2Provider extends AppWidgetProvider {
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
             if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-                Logs.myLog("Widget2 - onReceive() - Cannot proceed without Widget ID", 3);
+                Logs.myLog("Widget2 - onReceive() - Cannot proceed without Widget ID",4);
             }
 
             int uid = p.getInt("W-" + appWidgetId,-1);
@@ -197,7 +197,7 @@ public class Widget2Provider extends AppWidgetProvider {
             if (uid == -1) {
                 // Means we have no record of the Widget
                 // Not sure we would ever get here
-                Logs.myLog("Widget2 - onReceive() - [b] Could not get UID of app!",3);
+                Logs.myLog("Widget2 - onReceive() - [b] Could not get UID of app!",4);
 
                 updateGUIAll(context);
                 return;
@@ -208,7 +208,7 @@ public class Widget2Provider extends AppWidgetProvider {
             if (state == -1)
             {
                 // Widget exists but app has been deleted
-                Logs.myLog("Widget2 - onReceive() - [b] App no longer exists: " + uid,3);
+                Logs.myLog("Widget2 - onReceive() - [b] App no longer exists: " + uid,4);
 
                 updateGUIAll(context);
                 return;
@@ -219,10 +219,10 @@ public class Widget2Provider extends AppWidgetProvider {
                 // And update the list held in memory
                 AppInfo app = Global.appListFW.get(uid);
                 if (app != null) {
-                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,3);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,4);
                     app.fw = 10;
                 } else {
-                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",3);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",4);
                 }
             } else {
                 // Write to the file
@@ -230,10 +230,10 @@ public class Widget2Provider extends AppWidgetProvider {
                 // And update the list held in memory
                 AppInfo app = Global.appListFW.get(uid);
                 if (app != null) {
-                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,3);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,4);
                     app.fw = 30;
                 } else {
-                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",3);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",4);
                 }
             }
 
@@ -275,7 +275,7 @@ public class Widget2Provider extends AppWidgetProvider {
             icon = pManager.getApplicationIcon(packageName);
         } catch (Exception e) {
             icon = getContext().getResources().getDrawable(R.drawable.android);
-            Logs.myLog("Widget2 - onReceive() - Cannot get icon for : " + packageName + " - UID: " + uid,3);
+            Logs.myLog("Widget2 - onReceive() - Cannot get icon for : " + packageName + " - UID: " + uid,4);
         }
 
         return icon;

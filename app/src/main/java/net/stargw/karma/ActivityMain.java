@@ -66,7 +66,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            Logs.myLog("ActivityMain Received intent: " + intent.getAction(), 3);
+            Logs.myLog("ActivityMain Received intent: " + intent.getAction(), 4);
 
             if (Global.REBUILD_APPS_DONE.equals(intent.getAction()))
             {
@@ -240,11 +240,16 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             // Check if we have nothing. Do not display a blank screen
             if (appListCopy == null)
             {
-                // appListFW might be populated, but we cannot be
-                // certain it is complete.
-                displayAppDialog();
+                if ( (Global.appListFW == null) || (Global.appListFW.isEmpty()) )
+                {
+                    displayAppDialog();
+                } else {
+                    // we don't have a copy, but an appListFW exists
+                    updateAppListCopy();
+                }
             }
             // A full rebuild in the background
+            Logs.myLog("ActivityMain -> onResume() -> Global.getAppListBackground()", 2);
             Global.getAppListBackground();
         }
 
@@ -426,6 +431,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     case R.id.action_refresh:
                         displayAppDialog();
                         Global.rebuildGUIappList = true;
+                        Logs.myLog("ActivityMain -> Menu Force Refresh -> Global.getAppListBackground()", 2);
                         Global.getAppListBackground();
                         return true;
                     case R.id.action_subnet:
@@ -521,7 +527,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             if (thisApp.system == Global.settingsEnableExpert) {
                 if (thisApp.flush == false) { // deleted apps
                     appListCopy.add(thisApp);
-                    Logs.myLog("Copy app to GUI: " + thisApp.name, 3);
+                    Logs.myLog("Copy app to GUI: " + thisApp.name, 4);
 
                 }
             }
@@ -960,6 +966,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     serviceIntent.putExtra("command", Global.FIREWALL_STOP);
                     Global.getContext().startService(serviceIntent);
                 } else {
+                    ImageView toggle = (ImageView) findViewById(R.id.activity_main_firewall_icon);
+                    toggle.setColorFilter(Color.YELLOW);
+
                     // If first time, user interaction required
                     Logs.myLog("VPNService Prepare...",2);
                     Intent intent = VpnService.prepare(myContext);

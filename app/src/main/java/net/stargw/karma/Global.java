@@ -117,6 +117,7 @@ public class Global extends Application {
 
 		Log.w("Karma", "Global - onCreate(): " + Global.settingsLoggingLevel);
 
+		Logs.myLog("Global -> onCreate() -> Global.getAppListBackground()", 2);
 		Global.getAppListBackground();
 	}
 
@@ -456,7 +457,7 @@ public class Global extends Application {
 
 	public static void getAppDetail(PackageInfo packageInfo) {
 
-		Logs.myLog("=========\ngetAppDetail()", 3 );
+		Logs.myLog("========= getAppDetail()", 3 );
 
 		AppInfo app = new AppInfo();
 
@@ -476,7 +477,7 @@ public class Global extends Application {
 
 			if (packageInfo.requestedPermissions == null)
 			{
-				// Logs.myLog("No permissions!", 3 );
+				Logs.myLog("No permissions!", 3 );
 			} else {
 
 				for (String permission : packageInfo.requestedPermissions) {
@@ -555,11 +556,11 @@ public class Global extends Application {
 
 			if (appListFW.containsKey(app.UID2)) {
 				appFW = appListFW.get(app.UID2);
-				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 3 );
+				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 4 );
 				appFW.enabled = appFW.enabled | app.enabled;
 				appFW.system = appFW.system | app.system;
 			} else {
-				Logs.myLog("New UID " + app.UID2 + " " + packageName, 3 );
+				Logs.myLog("New UID " + app.UID2 + " " + packageName, 4 );
 				appFW = new AppInfo();
 				appFW.name = app.name;
 				appFW.UID2 = app.UID2;

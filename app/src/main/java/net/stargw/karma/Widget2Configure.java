@@ -349,6 +349,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
             {
                 Logs.myLog("Widget2Configure - appListFW = null, so need to build", 2);
                 displayAppDialog();
+                Logs.myLog("Widget2Configure -> onResume -> Global.getAppListBackground()", 2);
                 Global.getAppListBackground();
             } else {
                 // we have a list so display it
@@ -408,6 +409,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                         return true;
 
                     case R.id.action_refresh:
+                        Logs.myLog("Widget2Configure -> GUI Force Refresh -> Global.getAppListBackground()", 2);
                         Global.getAppListBackground();
                         displayAppDialog();
                         return true;

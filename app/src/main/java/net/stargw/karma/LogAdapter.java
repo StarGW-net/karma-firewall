@@ -56,6 +56,7 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
         // Check for empty log line
         if (!( (logLine == null) || (logLine.length() == 0) ))  // CRASH fixed
         {
+
             if (logLine.contains(" @SW@ ")) {
                 logType = 1;
             } else {
@@ -63,6 +64,8 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
                     logType = 2;
                 }
             }
+
+
         }
         String d = "";
         String t = "";
@@ -73,12 +76,11 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
                 t = logLine.substring(pos+5);
 
                 date1.setText(d);
-
+/*
                 text1.setMovementMethod(LinkMovementMethod.getInstance());
-
                 text1.setText(Html.fromHtml(t));
-
-                // text1.setText(t);
+*/
+                text1.setText(t);
                 break;
 
             case 2: // This is an ADB log
@@ -91,8 +93,8 @@ public class LogAdapter extends ArrayAdapter<String> implements Filterable {
 
             default:
                 d = logLine;
-                date1.setText("");
-                date1.setVisibility(View.GONE);
+                date1.setText("NO DATE");
+                // date1.setVisibility(View.GONE);
                 text1.setText(d);
                 break;
         }

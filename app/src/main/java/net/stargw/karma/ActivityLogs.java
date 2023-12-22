@@ -223,19 +223,23 @@ public class ActivityLogs extends Activity {
 
         switch (Global.settingsLoggingLevel) {
             case 0:
-                item = m.findItem(R.id.action_none);
+                item = m.findItem(R.id.action_log_0);
                 item.setChecked(true);
                 break;
             case 1:
-                item = m.findItem(R.id.action_normal);
+                item = m.findItem(R.id.action_log_1);
                 item.setChecked(true);
                 break;
             case 2:
-                item = m.findItem(R.id.action_detailed);
+                item = m.findItem(R.id.action_log_2);
+                item.setChecked(true);
+                break;
+            case 3:
+                item = m.findItem(R.id.action_log_3);
                 item.setChecked(true);
                 break;
             default:
-                item = m.findItem(R.id.action_debug);
+                item = m.findItem(R.id.action_log_4);
                 item.setChecked(true);
                 break;
         }
@@ -263,25 +267,25 @@ public class ActivityLogs extends Activity {
                         Logs.clearLog();
                         refreshLogs();
                         return true;
-                    case R.id.action_none:
+                    case R.id.action_log_0:
                         Global.settingsLoggingLevel = 0;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_normal:
+                    case R.id.action_log_1:
                         Global.settingsLoggingLevel = 1;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_detailed:
+                    case R.id.action_log_2:
                         Global.settingsLoggingLevel = 2;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_debug:
+                    case R.id.action_log_3:
                         Global.settingsLoggingLevel = 3;
                         Global.saveSetings();
                         logWarn();

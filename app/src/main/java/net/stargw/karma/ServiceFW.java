@@ -1,6 +1,8 @@
 package net.stargw.karma;
 
 
+import static net.stargw.karma.Global.APPLIST_DOING;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -59,7 +61,7 @@ public class ServiceFW extends VpnService implements Runnable {
     //
     public void sendNotificationServiceStart(String message) {
 
-        Logs.myLog("ServiceFW - SonCreate(): " + message, 2);
+        Logs.myLog("ServiceFW - sendNotificationServiceStart(): " + message, 2);
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -101,6 +103,8 @@ public class ServiceFW extends VpnService implements Runnable {
     // We cannot cancel a service notification so replace it
     //
     void sendNotificationServiceStop(String message) {
+
+        Logs.myLog("ServiceFW - sendNotificationServiceStop(): " + message, 2);
 
         int icon = R.drawable.ic_lock_idle_lock2;
 
@@ -182,8 +186,19 @@ public class ServiceFW extends VpnService implements Runnable {
             Logs.myLog("No apps! Cannot start VPN", 1);
             return null;
         } else {
-            Logs.myLog("Start VPN with number of apps = " + Global.appListFW.size(), 1);
+            while (Global.appListState == APPLIST_DOING) {
+                try {
+                    Thread.sleep(1000);
+                    Logs.myLog("App list not ready yet. Size = " + Global.appListFW.size(), 2);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+        Logs.myLog("Start VPN with number of apps = " + Global.appListFW.size(), 1);
+
+
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
 
         while (it.hasNext())
@@ -580,7 +595,8 @@ public class ServiceFW extends VpnService implements Runnable {
             try {
                 // Sleep
                 Thread.sleep(300000); // 300 secs
-                Logs.myLog("ServiceFW - Checking apps...", 2);
+                // Logs.myLog("ServiceFW - Checking apps...", 2);
+                Logs.myLog("ServiceFW -> run() -> Global.getAppList()", 2);
                 if (Global.getAppList() == false)
                 {
                     Logs.myLog("ServiceFW -  Housekeeping restart...", 3);
