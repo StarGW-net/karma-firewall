@@ -72,7 +72,7 @@ public class ServiceFW extends VpnService implements Runnable {
 
         // For Oreo+
         if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel notificationChannel = Global.createNotificationChannel("FW1","FW Start Alert");
+            NotificationChannel notificationChannel = Global.createNotificationChannel("FW1","Non-GUI FW Start/Stop Alert");
 
             Notification n = new Notification.Builder(this, notificationChannel.getId())
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
@@ -113,7 +113,7 @@ public class ServiceFW extends VpnService implements Runnable {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
-            NotificationChannel notificationChannel = Global.createNotificationChannel("FW1", "FW Start Alert");
+            NotificationChannel notificationChannel = Global.createNotificationChannel("FW1", "Non-GUI FW Start/Stop Alert");
 
             Notification n =
                 new Notification.Builder(this, notificationChannel.getId())

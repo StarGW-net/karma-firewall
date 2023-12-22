@@ -105,7 +105,7 @@ public class Global extends Application {
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		Global.createNotificationChannel("FW1", "FW Start Alert");
+		Global.createNotificationChannel("FW1", "Non-interactive Start/Stop Alert");
 		Global.createNotificationChannel("FW2", "New App Alert");
 		Global.createNotificationChannel("FW3", "FW Abort Alert");
 
