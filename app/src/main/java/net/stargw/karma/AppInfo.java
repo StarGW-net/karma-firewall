@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +25,8 @@ public class AppInfo implements Cloneable, Serializable {
     // public ArrayList<String> packageNames = null;
     // public ArrayList<String> appNames = null;
 
-    List<AppInfoExtra> appInfoExtra;
-
+    // List<AppInfoExtra> appInfoExtra;
+    Map<String, AppInfoExtra> appInfoExtra;
     // static Map<Integer, String> packageDetail = new ConcurrentHashMap<Integer, String>();
 
 

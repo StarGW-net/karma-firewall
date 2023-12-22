@@ -1,7 +1,6 @@
 package net.stargw.karma;
 
-import java.util.ArrayList;
-
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,19 +42,17 @@ public class Global extends Application {
 	
 	private static Context mContext;
 
-	// static ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
-	// static Map<Integer, AppInfo> appListFW = new HashMap<Integer, AppInfo>();
-	// static ArrayList<HashMap<Integer, AppInfo>> appListFW = new ArrayList<HashMap<Integer, AppInfo>>(); // wow!!
-
 	// This is the main one and only app list
 	// This must be populated before the firewall can start
 	// This must be populated before the GUI can be shown
 	static Map<Integer, AppInfo> appListFW = new ConcurrentHashMap<Integer, AppInfo>();
 
+	static int appListState = 0;
 	static final int APPLIST_DOING = 1;
 	static final int APPLIST_DONE = 2;
-	static int appListState = 0;
 
+	// This can only be reset by the GUI
+	static boolean rebuildGUIappList = true;
 
 	// to update the GUI
 	static int packageMax = 0;
@@ -63,27 +61,28 @@ public class Global extends Application {
 	static NotificationChannel newAppNotificationChannel;
 	static NotificationManager notificationManager;
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		mContext = this;
+	// Settings variables
+	static Boolean settingsEnableExpert;
+	private static Boolean settingsFirewallStateOn = false;
+	static Boolean settingsEnableNotifications = true;
+	static Boolean settingsEnableBoot = false;
+	static Boolean settingsEnableRestart = false;
+	static String settingsSubnet = "";
+	static int settingsLoggingLevel = 0;
+	static int settingsSortOption = 0;
+	static Boolean settingsEnableLogcat = false;
 
-		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		Global.getAppListBackground();
-	}
 
-	static final String LOG_FILE = "Karma-FW-log.txt";
 
-	static final String APPS_REFRESH_INTENT = "net.stargw.karma.intent.action.APPS_REFRESH";
-	static final String APPS_LOADING_INTENT = "net.stargw.karma.intent.action.APPS_LOADING";
-	static final String SCREEN_REFRESH_INTENT = "net.stargw.karma.intent.action.REFRESH";
-	static final String FIREWALL_STATE_CHANGE = "net.stargw.karma.intent.action.FIREWALL";
-	static final String FIREWALL_STATE_ON = "net.stargw.karma.intent.action.FIREWALL_ON";
-	static final String FIREWALL_STATE_OFF = "net.stargw.karma.intent.action.FIREWALL_OFF";
-	static final String TOGGLE = "net.stargw.karma.intent.action.TOGGLE";
-	static final String TOGGLEAPP = "net.stargw.karma.intent.action.TOGGLEAPP";
-	static final String TOGGLEAPP_REFRESH = "net.stargw.karma.intent.action.TOGGLEAPP_REFRESH";
+	static final String REBUILD_APPS_DONE = "net.stargw.karma.REBUILD_GUI_APP_LIST";
+	static final String REBUILD_APPS_IN_PROGRESS = "net.stargw.karma.APPS_IN_PROGRESS";
+
+	static final String FIREWALL_STATE_CHANGE = "net.stargw.karma.FIREWALL_STATE_CHANGE";
+
+	static final String TOGGLE = "net.stargw.karma.TOGGLE";
+	static final String TOGGLEAPP = "net.stargw.karma.TOGGLEAPP";
+	static final String TOGGLEAPP_REFRESH = "net.stargw.karma.TOGGLEAPP_REFRESH";
 
 	static final String FIREWALL_START = "fw_start";
 	static final String FIREWALL_RESTART = "fw_restart";
@@ -96,18 +95,45 @@ public class Global extends Application {
 
 	static final String WIDGET_ACTION = "widget_action";
 
-	static int focusUID = 0;
 
 
-	static Boolean settingsEnableExpert;
-	private static Boolean settingsFirewallStateOn = false;
-	static Boolean settingsEnableNotifications = true;
-	static Boolean settingsEnableBoot = false;
-	static Boolean settingsEnableRestart = false;
-	static String settingsSubnet = "";
-	static int settingsLoggingLevel = 0;
 
-	static int settingsSortOption = 0;
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		mContext = this;
+
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		Global.createNotificationChannel("FW1", "Non-interactive Start/Stop Alert");
+		Global.createNotificationChannel("FW2", "New App Alert");
+		Global.createNotificationChannel("FW3", "FW Abort Alert");
+
+		Global.getSettings();
+
+		Logs.getLoggingLevel(); // gets level + housekeeping
+
+		Logs.myLog("Global - onCreate()", 2);
+
+		Log.w("Karma", "Global - onCreate(): " + Global.settingsLoggingLevel);
+
+		Logs.myLog("Global -> onCreate() -> Global.getAppListBackground()", 2);
+		Global.getAppListBackground();
+	}
+
+	@Override
+	public void onTerminate() {
+		Logs.myLog("Global - onTerminate()", 2);
+
+		super.onTerminate();
+	}
+
+	@Override
+	public void onLowMemory() {
+		Logs.myLog("Global - onLowMemory()", 2);
+
+		super.onLowMemory();
+	}
 
 	public static Context getContext(){
 		return mContext;
@@ -136,17 +162,9 @@ public class Global extends Application {
 	public static void setFirewallState(Boolean state)
 	{
 		Intent broadcastIntent = new Intent();
-		if (state != settingsFirewallStateOn)
-		{
-			broadcastIntent.setAction(Global.FIREWALL_STATE_CHANGE);
-		} else {
-			if (state)
-			{
-				broadcastIntent.setAction(Global.FIREWALL_STATE_ON);
-			} else {
-				broadcastIntent.setAction(Global.FIREWALL_STATE_OFF);
-			}
-		}
+
+		broadcastIntent.setAction(Global.FIREWALL_STATE_CHANGE);
+
 		settingsFirewallStateOn = state;
 		mContext.sendBroadcast(broadcastIntent);
 
@@ -197,6 +215,8 @@ public class Global extends Application {
 		settingsLoggingLevel = p.getInt("settingsLoggingLevel", 1);
 		settingsSortOption = p.getInt("settingsSortOption", 0);
 		settingsSubnet = p.getString("settingsSubnet", "");
+		settingsEnableLogcat = p.getBoolean("settingsEnableLogcat", false);
+
 	}
 
 	public static void saveSetings()
@@ -217,14 +237,14 @@ public class Global extends Application {
 
 	public static void getAppListBackground()
 	{
-
+/*
 		// If we are already building an app list - don't!
 		if (Global.appListState == APPLIST_DOING)
 		{
 			Logs.myLog("Applist Build in progress...skipping", 2);
 			return;
 		}
-
+*/
 		// Build apps
 		Thread thread = new Thread() {
 			@Override
@@ -238,6 +258,14 @@ public class Global extends Application {
 
 	public static boolean getAppList()
 	{
+		Logs.myLog("getAppList()...START", 2);
+
+		// If we are already building an app list - don't!
+		if (Global.appListState == APPLIST_DOING)
+		{
+			Logs.myLog("Applist Build in progress...skipping", 2);
+			return false;
+		}
 
 		Global.appListState = APPLIST_DOING;
 
@@ -251,18 +279,26 @@ public class Global extends Application {
 			int key = it.next();
 			AppInfo app = Global.appListFW.get(key);
 			app.flush = true;
-			app.expandView = false;
+			// app.expandView = false;
 			// app.appInfoExtra = null; // these may have changed...
 			// this will double up...
-			app.appInfoExtra = new ArrayList<AppInfoExtra>();
+			// app.appInfoExtra = new ArrayList<AppInfoExtra>();
 		}
 
 		PackageInfo packageInfo;
 		List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
 
+		/*
+		// Package name for UID 0 returns null - we cannot firewall root
+		String root = Global.getContext().getPackageManager().getNameForUid(0);
+		if (root != null)
+		{
+			Logs.myLog("Root = " + root, 3);
+		}
+		*/
+
 		Global.packageMax = packageInfoList.size();
 		Global.packageCurrent = 0;
-
 
 		for (int i = 0; i < packageInfoList.size(); i++)
 		{
@@ -282,11 +318,11 @@ public class Global extends Application {
 			// Logs.myLog("-------------------", 3);
 
 			Intent broadcastIntent = new Intent();
-			broadcastIntent.setAction(Global.APPS_LOADING_INTENT);
+			broadcastIntent.setAction(Global.REBUILD_APPS_IN_PROGRESS);
 			mContext.sendBroadcast(broadcastIntent);
 		}
 
-		Logs.myLog("Built an installed app list of: " +  Global.appListFW.size(), 2);
+		Logs.myLog("getAppList() = " +  Global.appListFW.size() + " (user + system)", 2);
 
 		// Tidy up deleted apps - by going through all the shared preference files
 
@@ -308,12 +344,14 @@ public class Global extends Application {
 						{
 							// remove
 							p.edit().remove("FW-" + uid).apply();
-							Logs.myLog("App Removed via flush: " + uid + " " + app.name, 3);
+							Logs.myLog("App Removed via Flush: " + uid + " " + app.name, 2);
 							Global.appListFW.remove(uid);
+							rebuildGUIappList = true;
 						}
 					} else {
+						rebuildGUIappList = true;
 						p.edit().remove("FW-" + uid).apply();
-						Logs.myLog("App Removed via File: " +  uid, 3);
+						Logs.myLog("App Removed via File: " +  uid, 2);
 					}
 				} catch(NumberFormatException nfe) {
 					continue;
@@ -322,10 +360,16 @@ public class Global extends Application {
 
 		}
 
+		// Notify new apps
+		String newAppText = "";
+
+		boolean restart = false;
+
 		it = Global.appListFW.keySet().iterator();
 
 		//
-		// Now we have all the apps back check FW status
+		// Now we have all the apps - write to shared prefs
+		// and check for new apps
 		//
 		while (it.hasNext()) {
 			// Get if its firewalled or not.
@@ -353,24 +397,12 @@ public class Global extends Application {
 					thisApp.fw = 10;
 				}
 			}
-		}
-
-		// Notify new apps
-		String newAppText = "";
-
-		it = Global.appListFW.keySet().iterator();
-
-		boolean restart = false;
-
-		//
-		// Check for new Apps
-		//
-		while (it.hasNext())
-		{
-			int key = it.next();
-			AppInfo thisApp = Global.appListFW.get(key);
+			//
+			// Check for new Apps
+			//
 			if (thisApp.fw == 25)
 			{
+				rebuildGUIappList = true;
 				Logs.myLog("Notify App: " +  thisApp.name, 3);
 				newAppText = newAppText + thisApp.name + "\n";
 				// Change so does not notify again, but still new
@@ -379,6 +411,7 @@ public class Global extends Application {
 			}
 			if (thisApp.fw == 45)
 			{
+				rebuildGUIappList = true;
 				restart = true;
 				Logs.myLog("Notify App: " +  thisApp.name, 3);
 				newAppText = newAppText + thisApp.name + "\n";
@@ -388,17 +421,26 @@ public class Global extends Application {
 			}
 		}
 
-		if (!newAppText.isEmpty())
-		{
+
+		if (!newAppText.isEmpty()) {
 			notifyNewApp(newAppText);
 		}
 
-		if ( (restart == true) && (Global.getFirewallState() == true) )
-		{
+		if ((restart == true) && (Global.getFirewallState() == true)) {
 			Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
 			serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
 			Global.getContext().startService(serviceIntent);
 		}
+
+
+		// Send to GUI if its listening
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction(Global.REBUILD_APPS_DONE);
+		mContext.sendBroadcast(broadcastIntent);
+
+		Logs.myLog("getAppList()...DONE", 3);
+
+		Global.updateMyWidgets();
 
 		// Write to file?
 		// writeAppListFWFile(Global.appListFW);
@@ -408,13 +450,6 @@ public class Global extends Application {
 
 		p.edit().putBoolean("settingsFirstRun", false).apply();
 
-		// Send to GUI if its listening
-		Intent broadcastIntent = new Intent();
-		broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
-		mContext.sendBroadcast(broadcastIntent);
-
-		Global.updateMyWidgets();
-
 		return restart;
 
 	}
@@ -422,20 +457,19 @@ public class Global extends Application {
 
 	public static void getAppDetail(PackageInfo packageInfo) {
 
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-		int LoggingLevel = p.getInt("LoggingLevel",1);
+		Logs.myLog("========= getAppDetail()", 3 );
 
 		AppInfo app = new AppInfo();
-
-		AppInfo appNew = null; // = new AppInfo();
 
 		ApplicationInfo applicationInfo = packageInfo.applicationInfo;
 
 		PackageManager pManager = mContext.getPackageManager();
 
 		String packageName = packageInfo.packageName;
-		// app.versionName = packageInfo.versionName;
-		// app.sourcePath = applicationInfo.sourceDir;
+
+
+		Logs.myLog("Package: " + packageName + " UID = " + applicationInfo.uid, 3 );
+
 
 		app.internet = false;
 		try {
@@ -443,7 +477,7 @@ public class Global extends Application {
 
 			if (packageInfo.requestedPermissions == null)
 			{
-
+				Logs.myLog("No permissions!", 3 );
 			} else {
 
 				for (String permission : packageInfo.requestedPermissions) {
@@ -455,11 +489,11 @@ public class Global extends Application {
 			}
 
 		} catch (PackageManager.NameNotFoundException e) {
-			if (LoggingLevel > 2) {
+			if (Global.settingsLoggingLevel > 2) {
 				e.printStackTrace();
 			}
 		} catch (Exception e) {
-			if (LoggingLevel > 2) {
+			if (Global.settingsLoggingLevel > 2) {
 				e.printStackTrace();
 			}
 		}
@@ -467,6 +501,7 @@ public class Global extends Application {
 		if (app.internet == false)
 		{
 			// We are not interested in package
+			Logs.myLog("No Internet - Ignore!", 3 );
 			return;
 		}
 
@@ -496,7 +531,7 @@ public class Global extends Application {
 				app.system = false;
 			}
 		} catch (Exception e) {
-			if (LoggingLevel > 2) {
+			if (Global.settingsLoggingLevel > 2) {
 				e.printStackTrace();
 			}
 		}
@@ -521,20 +556,23 @@ public class Global extends Application {
 
 			if (appListFW.containsKey(app.UID2)) {
 				appFW = appListFW.get(app.UID2);
-				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 2 );
-				appFW.appInfoExtra.add(appInfoExtra);
+				Logs.myLog("Existing UID " + app.UID2 + " " + packageName, 4 );
 				appFW.enabled = appFW.enabled | app.enabled;
 				appFW.system = appFW.system | app.system;
 			} else {
-				Logs.myLog("New UID " + app.UID2 + " " + packageName, 2 );
+				Logs.myLog("New UID " + app.UID2 + " " + packageName, 4 );
 				appFW = new AppInfo();
 				appFW.name = app.name;
 				appFW.UID2 = app.UID2;
 				appFW.enabled = app.enabled;
 				appFW.system = app.system;
-				appFW.appInfoExtra =   new ArrayList<AppInfoExtra>();
-				appFW.appInfoExtra.add(appInfoExtra);
+				appFW.appInfoExtra = new HashMap<String, AppInfoExtra>();
 				appListFW.put(app.UID2,appFW); // replacing?
+			}
+
+			if (!(appFW.appInfoExtra.containsKey(appInfoExtra.packageFQDN)))
+			{
+				appFW.appInfoExtra.put(appInfoExtra.packageFQDN,appInfoExtra);
 			}
 
 			if (appFW.appInfoExtra.size() > 1) {
@@ -557,6 +595,7 @@ public class Global extends Application {
 			appFW.flush = false;
 
 		}
+
 
 		return;
 	}
@@ -599,35 +638,32 @@ public class Global extends Application {
 		} else {
 			if (apps.icon == null) {
 				try {
-					apps.icon = pManager.getApplicationIcon(apps.appInfoExtra.get(0).packageFQDN);
+					apps.icon = pManager.getApplicationIcon(apps.appInfoExtra.get(apps.appInfoExtra.keySet().toArray()[0]).packageFQDN);
 				} catch (Exception e) {
 					apps.icon = getContext().getResources().getDrawable(R.drawable.alert);
-					Logs.myLog("Cannot get icon: " + apps.appInfoExtra.get(0).packageFQDN, 3);
+					Logs.myLog("Cannot get icon: " + apps.appInfoExtra.get(apps.appInfoExtra.keySet().toArray()[0]).packageFQDN, 3);
 				}
 			}
 		}
 
 	}
 
-	// Notify of new app...but what if in GUI at the time...
-
-	public static String createNewAppNotificationChannel() {
+	public static NotificationChannel createNotificationChannel(String channelId, String channelName) {
 		// Create the NotificationChannel, but only on API 26+ because
 		// the NotificationChannel class is new and not in the support library
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			String channelId = "FW2";
-			String channelName = "New App Alert";
-			newAppNotificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
+			// String channelId = "FW2";
+			// String channelName = "New App Alert";
+			NotificationChannel notificationChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
 			// omitted the LED color
-			newAppNotificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
-			newAppNotificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-			notificationManager.createNotificationChannel(newAppNotificationChannel);
-			return channelId;
+			notificationChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
+			notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+			notificationManager.createNotificationChannel(notificationChannel);
+			return notificationChannel;
 		} else {
-			return "none";
+			return null;
 		}
 	}
-
 
 	public static void notifyNewApp(String myText) {
 		Intent intent = new Intent(mContext, ActivityMain.class);
@@ -644,7 +680,7 @@ public class Global extends Application {
 		if (Build.VERSION.SDK_INT >= 26) {
 
 			if (newAppNotificationChannel == null) {
-				createNewAppNotificationChannel();
+				newAppNotificationChannel = createNotificationChannel("FW2","New App Alert");
 			}
 
 			Notification n = new NotificationCompat.Builder(mContext, newAppNotificationChannel.getId())
@@ -654,14 +690,6 @@ public class Global extends Application {
 					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
 					.setStyle(new NotificationCompat.BigTextStyle()
 							.bigText(myText))
-
-					/*
-					.setStyle(
-							new NotificationCompat.InboxStyle()
-									.addLine(myText)
-									.addLine("line ""))
-
-					 */
 					.setAutoCancel(true)
 					.setContentIntent(contentIntent)
 					.setAutoCancel(true).build();
@@ -676,17 +704,8 @@ public class Global extends Application {
 			Notification n = new NotificationCompat.Builder(mContext)
 					.setContentTitle(Global.getContext().getString(R.string.app_name))
 					.setContentText("New Apps Found!")
-
 					.setStyle(new NotificationCompat.BigTextStyle()
 							.bigText(myText))
-
-					/*
-					.setStyle(
-							new NotificationCompat.InboxStyle()
-									.addLine(myText)
-									.addLine("line ""))
-
-					 */
 					.setSmallIcon(R.drawable.ic_lock_idle_lock2)
 					.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.fw7))
 					.setAutoCancel(true)
@@ -714,7 +733,7 @@ public class Global extends Application {
 		// Action has to be a ACTION_APPWIDGET_* otherwise Widgets
 		// will not receive
 		updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-		updateIntent.putExtra(WIDGET_ACTION, "ALL");
+		updateIntent.putExtra(WIDGET_ACTION, "ALL"); // Do I need?
 		mContext.sendBroadcast(updateIntent);
 
 	}

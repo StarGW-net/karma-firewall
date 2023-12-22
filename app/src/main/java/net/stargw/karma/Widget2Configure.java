@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,23 +36,30 @@ import static net.stargw.karma.Global.getContext;
 
 public class Widget2Configure extends Activity implements ActivityMainListener {
 
-    private AppInfoAdapterApps adapter;
-    private ArrayList<AppInfo> appInfoSource;
-    private ListView listView;
+    private AppInfoAdapterWidget appListWidgetAdapter;
+    private ArrayList<AppInfo> appListWidget;
+    private ListView appListWidgetListView;
     private Context myContext;
 
     private int appWidgetId;
-    private static long currentProgress = 0;
 
-    private Dialog appLoad = null;
+    private Dialog appLoadWidget = null;
 
     private BroadcastListener mReceiver;
+
+    // When dialog starts show user apps
+    private Boolean enableExpert = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         myContext = this;
+
+        Global.getSettings();
+        Logs.getLoggingLevel(); // gets level + housekeeping
+
+        Logs.myLog("Widget2Configure - onCreate()", 2);
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -73,8 +79,8 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
             }
         });
 
-        // When app starts show user apps
-        Global.settingsEnableExpert = false;
+        // When dialog starts show user apps
+        enableExpert = false;
 
         EditText myFilter = (EditText) findViewById(R.id.activity_main_filter_text);
         myFilter.setVisibility(View.GONE);
@@ -109,7 +115,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                         public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                             // Logs.myLog("Filter on text: " + s , 3);
-                            adapter.getFilter().filter(s.toString()); // CRASH REPORTED HERE
+                            appListWidgetAdapter.getFilter().filter(s.toString()); // CRASH REPORTED HERE
                         }
                     });
                 } else {
@@ -127,34 +133,44 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     }
 
+    @Override
+    protected void onPause() {
+        Logs.myLog("Widget2Configure - onPause()", 2);
 
-    public void appRefresh()
+        if(mReceiver != null) {
+            unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
+        super.onPause();
+    }
+
+    public void updateAppListWidgetListView()
     {
+        Logs.myLog("Widget2Configure - updateAppListWidgetListView()", 2);
+
         // rebuild the app list
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
-        appInfoSource = new ArrayList<AppInfo>();
+        appListWidget = new ArrayList<AppInfo>();
 
         while (it.hasNext())
         {
             int key = it.next();
             AppInfo thisApp = Global.appListFW.get(key);
-            if (thisApp.system == Global.settingsEnableExpert) {
-                appInfoSource.add(thisApp);
+            if (thisApp.system == enableExpert) {
+                appListWidget.add(thisApp);
                 // Log.w("FWWidget2", "Add GUI app: " + thisApp.name);
             }
         }
 
 
-        mySort0(appInfoSource);
+        mySort0(appListWidget);
 
-        adapter = new AppInfoAdapterApps(myContext, appInfoSource);
-        adapter.updateFull();
-        // notify?
-        // adapter.notifyDataSetChanged();
-        listView = (ListView) findViewById(R.id.listViewApps);
-        listView.setAdapter(adapter);
+        appListWidgetAdapter = new AppInfoAdapterWidget(myContext, appListWidget);
+        appListWidgetAdapter.updateFull();
 
-        // setListViewFocus();
+        appListWidgetListView = (ListView) findViewById(R.id.listViewApps);
+        appListWidgetListView.setAdapter(appListWidgetAdapter);
+
     }
 
 
@@ -170,7 +186,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
     public void changeSelectedItem(int pos)
     {
-        AppInfo thisApp = adapter.getItem(pos);
+        AppInfo thisApp = appListWidgetAdapter.getItem(pos);
 
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(myContext);
 
@@ -208,12 +224,6 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
 
         p.edit().putInt("W-" + appWidgetId, thisApp.UID2).apply();
 
-        // boolean state = p.getBoolean("FW-" + thisApp.UID2,false);
-
-         //   views.setImageViewBitmap(R.id.widgit2_icon,thisApp.icon);
-
-        // views.setImageViewResource(R.id.widgit2_icon, R.drawable.fw_w_app);
-
         views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(thisApp.icon));
 
         if (thisApp.fw >= 30) {
@@ -240,77 +250,54 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         setResult(RESULT_OK, resultValue);
+
+        appListWidgetAdapter.clearExpanded();
+
         finish();
 
     }
-
-    public void setListViewFocus()
-    {
-
-    }
-
-
 
 
     void displayAppDialog()
     {
         // Display a loading dialog box until the app list is prepared by the service.
-        appLoad = new Dialog(myContext);
-        // appLoad = new ProgressDialog(myContext);
+        appLoadWidget = new Dialog(myContext);
 
-        currentProgress = 0;
+        appLoadWidget.setContentView(R.layout.dialog_progress);
+        appLoadWidget.setTitle(R.string.LoadingApps);
 
-        // appLoad.setContentView(R.layout.dialog_load);
-        appLoad.setContentView(R.layout.dialog_progress);
-        appLoad.setTitle(R.string.LoadingApps);
-
-        TextView text = (TextView) appLoad.findViewById(R.id.infoMessage);
+        TextView text = (TextView) appLoadWidget.findViewById(R.id.infoMessage);
         text.setText(R.string.BuildingApps);
 
-        text = (TextView) appLoad.findViewById(R.id.infoMessage2);
+        text = (TextView) appLoadWidget.findViewById(R.id.infoMessage2);
         text.setText(R.string.InfoLoadingApps);
 
-        appLoad.show();
+        appLoadWidget.show();
     }
 
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            // Logs.myLog("App Received intent", 2);
+            // Logs.myLog("Widget2Configure - onReceive()", 2);
 
-            // Log.w("FWMain", "Got Action = " + intent.getAction());
-
-            if (Global.APPS_LOADING_INTENT.equals(intent.getAction())) {
-                // Logs.myLog("App Loading intent received", 2);
-                // Global.myLog("App Received intent to update saving", 2);
-                // close dialog just in case we are stil showing it
-                if (appLoad != null) {
-                    ProgressBar progBar = (ProgressBar) appLoad.findViewById(R.id.progBar);
-                    currentProgress = currentProgress + 1;
-                    int x1 = (int) (currentProgress /(float)Global.packageMax*100);
-                    // Global.myLog("Progress = " + x1, 2);
-                    // Global.myLog("Progress = " + currentProgress + "/" +Global.packageMax, 2);
+            if (Global.REBUILD_APPS_IN_PROGRESS.equals(intent.getAction())) {
+                if (appLoadWidget != null) {
+                    ProgressBar progBar = (ProgressBar) appLoadWidget.findViewById(R.id.progBar);
+                    int x1 = (int) (Global.packageCurrent /(float)Global.packageMax*100);
                     progBar.setProgress(x1);
                 }
             }
 
-            if (Global.APPS_REFRESH_INTENT.equals(intent.getAction()))
+            if (Global.REBUILD_APPS_DONE.equals(intent.getAction()))
             {
-                Logs.myLog("App Received intent to update apps", 2);
+                Logs.myLog("Widget2Configure - Process Global.REBUILD_APPS_DONE", 2);
                 if (Global.appListFW != null)
                 {
-                    Logs.myLog("Redisplay Apps", 2);
-
-                    // reset adapter to app list built by service
-
-                    Logs.myLog("Rebuilt app list", 2);
-
                     // close the dialog box if we had one open
-                    if (appLoad != null) {
-                        Logs.myLog("Close dialog", 2);
-
-                        appLoad.cancel();  // can I take progress input from service?
-                        appLoad.dismiss();
-                        appLoad = null;
+                    if (appLoadWidget != null) {
+                        Logs.myLog("Close dialog", 3);
+                        appLoadWidget.cancel();
+                        appLoadWidget.dismiss();
+                        appLoadWidget = null;
                     }
 
                     AppWidgetManager man = AppWidgetManager.getInstance(myContext);
@@ -325,8 +312,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                         myContext.sendBroadcast(updateIntent);
                     }
 
-                    appRefresh();
-                    // createGUI(); // recreate..?
+                    updateAppListWidgetListView();
 
                 }
             }
@@ -339,33 +325,36 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
     protected void onResume() {
         super.onResume();
 
+        Logs.myLog("Widget2Configure - onResume()", 2);
+
         // register receiver
         mReceiver = new Widget2Configure.BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Global.FIREWALL_STATE_CHANGE);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_OFF);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_ON);
-        mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_LOADING_INTENT);
+
+        mIntentFilter.addAction(Global.REBUILD_APPS_DONE);
+        mIntentFilter.addAction(Global.REBUILD_APPS_IN_PROGRESS);
         mIntentFilter.addAction(Global.TOGGLEAPP_REFRESH);
 
         registerReceiver(mReceiver, mIntentFilter);
 
         // If we have no list try and build one
         // Don't want widget refreshing really
-        if ( (Global.appListFW == null) || (Global.appListFW.isEmpty()) )
+
+        if (Global.appListState == APPLIST_DOING)
         {
-            Log.w("Wid Config",  "No apps build");
             displayAppDialog();
-            Global.getAppListBackground();
         } else {
-            if (Global.appListState == APPLIST_DOING)
+            if ( (Global.appListFW == null) || (Global.appListFW.isEmpty()) )
             {
+                Logs.myLog("Widget2Configure - appListFW = null, so need to build", 2);
                 displayAppDialog();
+                Logs.myLog("Widget2Configure -> onResume -> Global.getAppListBackground()", 2);
+                Global.getAppListBackground();
+            } else {
+                // we have a list so display it
+                updateAppListWidgetListView();
             }
-            Log.w("Wid Config",  "Apps, so display");
-            appRefresh();
         }
 
 
@@ -388,7 +377,7 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
         MenuItem item = m.findItem(R.id.action_apps_system);
 
 
-        if (Global.settingsEnableExpert == true) {
+        if (enableExpert == true) {
             item.setTitle(R.string.activity_main_menu_apps_user);
         } else {
             item.setTitle(R.string.activity_main_menu_apps_system);
@@ -410,16 +399,17 @@ public class Widget2Configure extends Activity implements ActivityMainListener {
                         startActivity(intent);
                         return true;
                     case R.id.action_apps_system:
-                        if (Global.settingsEnableExpert == true) {
-                            Global.settingsEnableExpert = false;
+                        if (enableExpert == true) {
+                            enableExpert = false;
                         } else {
-                            Global.settingsEnableExpert = true;
+                            enableExpert = true;
                         }
                         Global.saveSetings();
-                        appRefresh();
+                        updateAppListWidgetListView();
                         return true;
 
                     case R.id.action_refresh:
+                        Logs.myLog("Widget2Configure -> GUI Force Refresh -> Global.getAppListBackground()", 2);
                         Global.getAppListBackground();
                         displayAppDialog();
                         return true;

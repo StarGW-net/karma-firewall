@@ -49,113 +49,72 @@ import static net.stargw.karma.Global.APPLIST_DOING;
 // public class ActivityMain extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, ActivityMainListener  {
 public class ActivityMain extends Activity implements ActivityMainListener{
 
-    private static long currentProgress = 0;
+    // private static long currentProgress = 0;
 
-    private Dialog appLoad = null;
-    private static final String TAG = "FOK";
-
-    private boolean appCreated = false;
-
-    private BroadcastListener mReceiver;
+    private Dialog dialogAppRebuildProgress = null;
 
     private Dialog dialogNewApps = null;
 
-    // ArrayList<AppInfo> appInfo;
+    private BroadcastListener mReceiver;
 
     // Master list of apps - copied from a global list built by the service
-    ArrayList<AppInfo> appInfoSource;
-    private AppInfoAdapterFW adapter;
-    private ListView listView;
+    ArrayList<AppInfo> appListCopy;
+    private AppInfoAdapterMain appListCopyAdaptor;
+    private ListView appListCopyListview;
 
     Context myContext;
 
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            // Logs.myLog("App Received intent", 2);
+            Logs.myLog("ActivityMain Received intent: " + intent.getAction(), 4);
 
-            // Log.w("FWMain", "Got Action = " + intent.getAction());
-
-            if (Global.SCREEN_REFRESH_INTENT.equals(intent.getAction()))
+            if (Global.REBUILD_APPS_DONE.equals(intent.getAction()))
             {
-                Logs.myLog("App Received intent to update screen", 2);
+                Logs.myLog("Process Global.REBUILD_APPS_DONE", 2);
                 // close dialog just in case we are stil showing it
-                if (appLoad != null) {
-                    Logs.myLog("Close dialog", 2);
-
-                    appLoad.cancel();  // can I take progress input from service?
-                    appLoad.dismiss();
-                    appLoad = null;
+                if (dialogAppRebuildProgress != null) {
+                    Logs.myLog("Close dialog", 3);
+                    dialogAppRebuildProgress.cancel();
+                    dialogAppRebuildProgress.dismiss();
+                    dialogAppRebuildProgress = null;
                 }
-                screenRefresh();
+
+                // Catch for a previous change not processed
+                Logs.myLog("Global.rebuildGUIappList: " + String.valueOf(Global.rebuildGUIappList).toUpperCase(), 2);
+
+                if (Global.rebuildGUIappList == true)
+                {
+                    updateAppListCopy();
+                } else {
+                    if (appListCopy == null)
+                    {
+                        // This can happen if service is running, but GUI has only
+                        // just been created
+                        Logs.myLog("appListCopy = null, so need to build", 2);
+                        updateAppListCopy();
+                    } else {
+                        updateAppListCopyListView();
+                    }
+                }
+
             }
 
-            if (Global.APPS_LOADING_INTENT.equals(intent.getAction())) {
+            if (Global.REBUILD_APPS_IN_PROGRESS.equals(intent.getAction())) {
                 // Logs.myLog("App Loading intent received", 2);
                 // Global.myLog("App Received intent to update saving", 2);
                 // close dialog just in case we are stil showing it
-                if (appLoad != null) {
-                    ProgressBar progBar = (ProgressBar) appLoad.findViewById(R.id.progBar);
-                    currentProgress = currentProgress + 1;
-                    int x1 = (int) (currentProgress /(float)Global.packageMax*100);
-                    // Global.myLog("Progress = " + x1, 2);
-                    // Global.myLog("Progress = " + currentProgress + "/" +Global.packageMax, 2);
+                if (dialogAppRebuildProgress != null) {
+                    ProgressBar progBar = (ProgressBar) dialogAppRebuildProgress.findViewById(R.id.progBar);
+                    int x1 = (int) (Global.packageCurrent /(float)Global.packageMax*100);
                     progBar.setProgress(x1);
                 }
             }
 
-            if (Global.APPS_REFRESH_INTENT.equals(intent.getAction()))
-            {
-                Logs.myLog("App Received intent to update apps", 2);
-                if (Global.appListFW != null)
-                {
-                    Logs.myLog("Redisplay Apps", 2);
-
-                    // reset adapter to app list built by service
-
-                    Logs.myLog("Rebuilt app list", 2);
-
-                    // close the dialog box if we had one open
-                    if (appLoad != null) {
-                        Logs.myLog("Close dialog", 2);
-
-                        appLoad.cancel();  // can I take progress input from service?
-                        appLoad.dismiss();
-                        appLoad = null;
-                    }
-
-                    // Update widgets
-                    Global.updateMyWidgets();
-
-                    appRefresh();
-
-                }
-            }
-
-
-            if (Global.FIREWALL_STATE_CHANGE.equals(intent.getAction()))
-            {
-                Logs.myLog("App Received intent to update firewall state", 2);
-                if (adapter != null)
-                {
-                    if (Global.getFirewallState() == true) {
-                        if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)) {
-                            Global.infoMessage(myContext, getString(R.string.dialog_warning), getString(R.string.notify_firewall_block_all));
-                        }
-
-                        Iterator<Integer> it = Global.appListFW.keySet().iterator();
-
-                        while (it.hasNext())
-                        {
-                            int key = it.next();
-                            AppInfo thisApp = Global.appListFW.get(key);
-                        }
-                    }
-                    updateFirewallStateDisplay(true);
-                }
-            }
-            if (Global.FIREWALL_STATE_ON.equals(intent.getAction()) || Global.FIREWALL_STATE_OFF.equals(intent.getAction())) {
+            if (Global.FIREWALL_STATE_CHANGE.equals(intent.getAction()) ) {
+                Logs.myLog("Process Global.FIREWALL_STATE_CHANGE", 2);
                 updateFirewallStateDisplay(true);
             }
+
 
         }
     };
@@ -183,67 +142,52 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         setContentView(R.layout.activity_main2);
 
-        appCreated = true;
-
         myContext = this;
 
         Global.getSettings();
-        Logs.getLoggingLevel();
+        Logs.getLoggingLevel(); // gets level + housekeeping
 
         // When app starts show user apps
         Global.settingsEnableExpert = false;
 
-        Logs.myLog("ActivityMain App Created", 2);
-
-        // Checking the state variable here would probably work
-        /*
-        Intent serviceIntentFW = new Intent(getBaseContext(), FOKServiceFW.class);
-        serviceIntentFW.putExtra("command", Global.FIREWALL_STATUS);
-        myContext.startService(serviceIntentFW);
-        */
+        Logs.myLog("ActivityMain - onCreate()", 2);
 
         createGUI();
-
-
-
-
 
     }
 
     void displayAppDialog()
     {
+        Logs.myLog("ActivityMain - displayAppDialog()", 2);
+
         // remove any old dialogs
-        if (appLoad != null) {
+        if (dialogAppRebuildProgress != null) {
             Logs.myLog("Close dialog", 2);
-            appLoad.cancel();
-            appLoad.dismiss();
-            appLoad = null;
+            dialogAppRebuildProgress.cancel();
+            dialogAppRebuildProgress.dismiss();
+            dialogAppRebuildProgress = null;
         }
 
         // Display a loading dialog box until the app list is prepared by the service.
-        appLoad = new Dialog(myContext);
-        // appLoad = new ProgressDialog(myContext);
+        dialogAppRebuildProgress = new Dialog(myContext);
 
-        currentProgress = 0;
+        dialogAppRebuildProgress.setContentView(R.layout.dialog_progress);
+        dialogAppRebuildProgress.setTitle(R.string.LoadingApps);
 
-        // appLoad.setContentView(R.layout.dialog_load);
-        appLoad.setContentView(R.layout.dialog_progress);
-        appLoad.setTitle(R.string.LoadingApps);
-
-        TextView text = (TextView) appLoad.findViewById(R.id.infoMessage);
+        TextView text = (TextView) dialogAppRebuildProgress.findViewById(R.id.infoMessage);
         text.setText(R.string.BuildingApps);
 
-        text = (TextView) appLoad.findViewById(R.id.infoMessage2);
+        text = (TextView) dialogAppRebuildProgress.findViewById(R.id.infoMessage2);
         text.setText(R.string.InfoLoadingApps);
 
 
-        appLoad.show();
+        dialogAppRebuildProgress.show();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        Logs.myLog("VPNService Prepare onActivityResult", 2);
+        Logs.myLog("ActivityMain - onActivityResult()", 2);
 
         // catch the result for FW prep
 
@@ -252,7 +196,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         {
             Logs.myLog("Result Code Received: " + resultCode, 2);
             if (resultCode == RESULT_OK) {
-                // ServiceSinkhole.start("prepared", this);
                 Intent serviceIntent = new Intent(myContext, ServiceFW.class);
                 serviceIntent.putExtra("command", Global.FIREWALL_START);
                 myContext.startService(serviceIntent);
@@ -261,7 +204,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             super.onActivityResult(requestCode, resultCode, data);
         }
 
-        // Global.FW = true;
     }
 
 
@@ -269,11 +211,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     protected void onResume() {
         super.onResume();
 
-        // Runs TWICE on startup. WHY? WHY? WHY?
-        Logs.myLog("Activity Main App Resumed", 2);
+        Logs.myLog("ActivityMain - onResume()", 2);
 
-        // Get a  list of apps a current data?
-        screenRefresh();
+        updateAppListCopyListView();
         updateFirewallStateDisplay(false);
 
         Logs.checkLogSize();
@@ -282,11 +222,10 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         mReceiver = new BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Global.FIREWALL_STATE_CHANGE);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_OFF);
-        mIntentFilter.addAction(Global.FIREWALL_STATE_ON);
-        mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_REFRESH_INTENT);
-        mIntentFilter.addAction(Global.APPS_LOADING_INTENT);
+
+        mIntentFilter.addAction(Global.REBUILD_APPS_DONE);
+        mIntentFilter.addAction(Global.REBUILD_APPS_IN_PROGRESS);
+
         mIntentFilter.addAction(Global.TOGGLEAPP_REFRESH);
 
         registerReceiver(mReceiver, mIntentFilter);
@@ -298,19 +237,21 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         {
             displayAppDialog();
         } else {
+            // Check if we have nothing. Do not display a blank screen
+            if (appListCopy == null)
+            {
+                if ( (Global.appListFW == null) || (Global.appListFW.isEmpty()) )
+                {
+                    displayAppDialog();
+                } else {
+                    // we don't have a copy, but an appListFW exists
+                    updateAppListCopy();
+                }
+            }
             // A full rebuild in the background
+            Logs.myLog("ActivityMain -> onResume() -> Global.getAppListBackground()", 2);
             Global.getAppListBackground();
         }
-
-        /*
-        // Count packages - a quick and dirty way to see if there have been any changes
-        // Rather than using a package broadcast receiver
-        List<PackageInfo> packageInfoList = Global.getContext().getPackageManager().getInstalledPackages(0);
-        int packages = packageInfoList.size();
-         */
-
-
-        appRefresh();
 
     }
 
@@ -319,7 +260,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     @Override
     protected void onStop() {
         super.onStop();  // Always call the superclass method first
-        Logs.myLog("Activity Main App Stopped", 2);
+        Logs.myLog("ActivityMain - onStop()", 2);
 
     }
 
@@ -392,7 +333,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                             Global.settingsEnableExpert = true;
                         }
                         Global.saveSetings();
-                        appRefresh();
+                        updateAppListCopy();
                         return true;
                     case R.id.action_apps_toggle:
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
@@ -400,7 +341,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                             // nothing
                         } else {
                             toggleAll(myContext);
-                            screenRefresh();
+                            updateAppListCopyListView();
                         }
                         return true;
 
@@ -464,6 +405,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
                         if (Global.getFirewallState() == false) {
                             // turn on the firewall as well..
+                            // If first time user interaction required
                             Logs.myLog("VPNService Prepare...", 2);
                             Intent i = VpnService.prepare(myContext);
                             if (i != null) {
@@ -474,6 +416,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                                 onActivityResult(666, RESULT_OK, null);
                             }
                         }
+
+
                         return false;
                     case R.id.action_autofw:
                         if (autoFW == 1) {
@@ -486,6 +430,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         return true;
                     case R.id.action_refresh:
                         displayAppDialog();
+                        Global.rebuildGUIappList = true;
+                        Logs.myLog("ActivityMain -> Menu Force Refresh -> Global.getAppListBackground()", 2);
                         Global.getAppListBackground();
                         return true;
                     case R.id.action_subnet:
@@ -511,6 +457,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
     @Override
     protected void onPause() {
+        Logs.myLog("ActivityMain - onPause()", 2);
+
         if(mReceiver != null) {
             unregisterReceiver(mReceiver);
             mReceiver = null;
@@ -521,80 +469,110 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     @Override
     public void onBackPressed()
     {
+        Logs.myLog("ActivityMain - onBackPressed()", 2);
+
         EditText myFilter = (EditText) findViewById(R.id.activity_main_filter_text);
 
         if (myFilter.getVisibility() == View.VISIBLE) {
             myFilter.setVisibility(View.GONE);
             myFilter.setText("");
+            appListCopyAdaptor.clearExpanded();
+
         } else {
             super.onBackPressed();
         }
     }
 
-    public void screenRefresh()
+    public void updateAppListCopyListView()
     {
-        // nothing
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+        Logs.myLog("ActivityMain - updateAppListCopyListView()", 2);
+
+        if (appListCopy == null)
+        {
+            Logs.myLog("updateAppListCopyListView() - appListCopy = null!", 2);
+        } else {
+            Logs.myLog("updateAppListCopyListView() - appListCopy = " + appListCopy.size(), 2);
+        }
+
+        if (appListCopyAdaptor != null) {
+            appListCopyAdaptor.notifyDataSetChanged();
+        } else {
+            Logs.myLog("updateAppListCopyListView() - appListCopyAdaptor = null!", 2);
         }
     }
 
-    public void appRefresh()
+
+    // rebuild the copy and refresh adaptors and listviews
+    public void updateAppListCopy()
     {
+        Logs.myLog("ActivityMain - updateAppListCopy()", 2);
+
+        if ((Global.appListFW == null) || (Global.appListFW.size() == 0))
+        {
+            Logs.myLog("appListFW empty. Nothing to copy to GUI!", 2);
+
+            // Reset that the GUI has processed
+            Global.rebuildGUIappList = false;
+            return;
+        }
+
         // rebuild the app list
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
-        appInfoSource = new ArrayList<AppInfo>();
-
-        boolean newApps = false;
+        appListCopy = new ArrayList<AppInfo>();
 
         while (it.hasNext())
         {
             int key = it.next();
             AppInfo thisApp = Global.appListFW.get(key);
             if (thisApp.system == Global.settingsEnableExpert) {
-                appInfoSource.add(thisApp);
-                Logs.myLog("Add GUI app: " + thisApp.name, 3);
+                if (thisApp.flush == false) { // deleted apps
+                    appListCopy.add(thisApp);
+                    Logs.myLog("Copy app to GUI: " + thisApp.name, 4);
+
+                }
             }
-            if ( (thisApp.fw == 20) || (thisApp.fw == 25) || (thisApp.fw == 40) || (thisApp.fw == 45) )
-            {
-                newApps = true;
-            }
+        }
+
+        if (Global.settingsEnableExpert) {
+            Logs.myLog("updateAppListCopy() - Number of apps = " + appListCopy.size() + " (system)", 2);
+        } else {
+            Logs.myLog("updateAppListCopy() - Number of apps = " + appListCopy.size() + " (user)", 2);
+
         }
 
         switch (Global.settingsSortOption) {
             case 0:
-                mySort0(appInfoSource);
+                mySort0(appListCopy);
                 break;
             case 1:
-                mySort1(appInfoSource);
+                mySort1(appListCopy);
                 break;
             case 2:
-                mySort2(appInfoSource);
+                mySort2(appListCopy);
                 break;
             default:
-                mySort0(appInfoSource);
+                mySort0(appListCopy);
                 break;
         }
 
+        appListCopyAdaptor = new AppInfoAdapterMain(myContext, appListCopy);
 
-        adapter = new AppInfoAdapterFW(myContext, appInfoSource);
-        adapter.updateFull();
-        // notify?
-        // adapter.notifyDataSetChanged();
-        listView = (ListView) findViewById(R.id.listViewApps);
-        listView.setAdapter(adapter);
+        appListCopyListview = (ListView) findViewById(R.id.listViewApps);
+        appListCopyListview.setAdapter(appListCopyAdaptor);
 
-        setListViewFocus();
+        // Reset that the GUI has processed
+        Global.rebuildGUIappList = false;
 
-        if (newApps == true)
-        {
-            showNewApps();
-        }
+        // After building a copy check for new apps if any
+        showNewApps();
+
     }
 
 
 
     private void createGUI() {
+
+        Logs.myLog("ActivityMain - createGUI()", 2);
 
         final Context c = myContext;
 
@@ -608,15 +586,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             }
         });
 
-        // show an apps list if we have one.
-        // if we do not have one it should be being built by the service
-        // then we get a notification and will update screen
-        /*
-        if (Global.appListFW != null) {
-            listView = (ListView) findViewById(R.id.listViewApps);
-            listView.setAdapter(adapter);
-        }
-        */
 
         EditText myFilter = (EditText) findViewById(R.id.activity_main_filter_text);
         myFilter.setVisibility(View.GONE);
@@ -651,16 +620,30 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                             // Logs.myLog("Filter on text: " + s , 3);
-                            adapter.getFilter().filter(s.toString()); // CRASH REPORTED HERE
+                            appListCopyAdaptor.getFilter().filter(s.toString());
                         }
                     });
+/*
+                    myFilter.setOnKeyListener((z, keyCode, event) -> {
+                        if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                            switch (keyCode) {
+                                case KeyEvent.KEYCODE_BACK:
+                                    appListCopyAdaptor.clearExpanded();
+                                    break;
+                            }
+                        }
+                        return false;
+                    });
+*/
                 } else {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(myFilter.getWindowToken(), 0);
 
                     myFilter.setVisibility(View.GONE);
                     myFilter.setText("");
-                    // adapter.getFilter().filter(null);
+
+                    appListCopyAdaptor.clearExpanded();
+
                 }
 
             }
@@ -727,6 +710,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
     private void enterSubnet()
     {
+        Logs.myLog("ActivityMain - enterSubnet()", 2);
 
         Context c = myContext;
 
@@ -889,51 +873,23 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     }
 
     public void changeSelectedItem(int position) {
-        AppInfo thisApp = adapter.getItem(position);
+        AppInfo thisApp = appListCopyAdaptor.getItem(position);
         toggleFirewallApp(thisApp);
-        // adapter.notifyDataSetChanged();
-        // Do your remove functionality here
-    }
-
-    @Override
-    public void setListViewFocus() {
-        Logs.myLog("setListViewFocus", 3);
-
-        ListView listView = (ListView) findViewById(R.id.listViewApps);
-
-        // update the list that drives the adaptor
-        // appInfo.clear(); // clear it quickly
-        // appInfo.addAll(appInfoSource); // then replace
-        adapter.notifyDataSetChanged();
-        adapter.updateFull();
-
-        if (Global.focusUID != 0 ) {
-
-
-            for (int i = 0; i < adapter.getCount(); i++) {
-                if (adapter.getItem(i).UID2 == Global.focusUID) {
-                    if ( (i < listView.getFirstVisiblePosition()) || (i >listView.getLastVisiblePosition()) ) {
-                        listView.setSelection(i);
-                        Logs.myLog("setting focus to: " + i, 3);
-                    } else {
-                        Logs.myLog("Already on screen! " + i, 3);
-                    }
-                    Global.focusUID = 0; // we only do it once!
-                    break;
-                }
-            }
-        }
+        updateAppListCopyListView();
     }
 
 
     private void toggleFirewallApp(AppInfo thisApp)
     {
+        Logs.myLog("ActivityMain - toggleFirewallApp()", 2);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
         {
             // old version - apps cannot be changed
             return;
         }
+
+        Logs.myLog("toggleFirewallApp: " + thisApp.name, 2);
 
         // If we want to use 40 for new blocked then 40 becomes 20 here...
         if (thisApp.fw == 30) {
@@ -942,37 +898,25 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             thisApp.fw = 30;
         }
 
-        // change the global - which may have been destroyed!!
+        // change the global - checking app is still there
         if (Global.appListFW.containsKey(thisApp.UID2)) {
             Global.appListFW.get(thisApp.UID2).fw = thisApp.fw;
         }
 
-        // So we save key: FW-UID2 data: boolean firewall
-
+        // Save the change
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
-        // STEVE should update Global!
-
-        Global.updateMyWidgets();
-
-        // need to refocus on app cos may change if sorted!
-        Global.focusUID = thisApp.UID2;
-
-        // adapter.notifyDataSetChanged(); // maybe need this
 
         if (Global.getFirewallState() == true) {
 
             Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
             serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
-            // serviceIntent.putExtra("restart", "app");
             Global.getContext().startService(serviceIntent);
-            // thisApp.bytesFWOut = TrafficStats.getUidTxBytes(thisApp.UID2);
-            // thisApp.bytesFWIn = TrafficStats.getUidRxBytes(thisApp.UID2);
+         } else {
+            Global.updateMyWidgets();
+
         }
 
-        screenRefresh(); // cos firewall may be off
-
-        Logs.myLog("Firewall Changed App: " + thisApp.name, 3);
     }
 
 
@@ -1022,7 +966,10 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                     serviceIntent.putExtra("command", Global.FIREWALL_STOP);
                     Global.getContext().startService(serviceIntent);
                 } else {
-                    // Intent intent = VpnService.prepare(getApplicationContext());
+                    ImageView toggle = (ImageView) findViewById(R.id.activity_main_firewall_icon);
+                    toggle.setColorFilter(Color.YELLOW);
+
+                    // If first time, user interaction required
                     Logs.myLog("VPNService Prepare...",2);
                     Intent intent = VpnService.prepare(myContext);
                     if (intent != null) {
@@ -1046,6 +993,9 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
 
     private void toggleAll(Context c) {
+
+        Logs.myLog("ActivityMain - toggleAll()", 2);
+
         final Dialog info = new Dialog(c);
 
         // final AppInfo thisApp = app;
@@ -1083,7 +1033,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 // loop through all apps...
                 toggleApps(10);
                 info.cancel();
-                screenRefresh();
+                updateAppListCopyListView();
             }
 
         });
@@ -1097,7 +1047,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                 // loop through all apps...
                 toggleApps(30);
                 info.cancel();
-                screenRefresh();
+                updateAppListCopyListView();
             }
 
         });
@@ -1107,6 +1057,8 @@ public class ActivityMain extends Activity implements ActivityMainListener{
     }
 
     private void toggleApps(int state) {
+        Logs.myLog("ActivityMain - toggleApps(): " + state, 2);
+
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
 
         while (it.hasNext()) {
@@ -1114,15 +1066,14 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             AppInfo app = Global.appListFW.get(key);
 
             // check system is viewable now...
-            if ((app.enabled) && (app.internet) && (app.system == Global.settingsEnableExpert) ) {
+            if ( (app.internet) && (app.system == Global.settingsEnableExpert) ) {
                 app.fw = state;
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
                 p.edit().putInt("FW-" + app.UID2, app.fw).apply();
 
                 Logs.myLog(app.name + ": done!" ,3);
 
-                adapter.notifyDataSetChanged(); // maybe need this
-
+                appListCopyAdaptor.notifyDataSetChanged(); // maybe need this
 
 
             }
@@ -1132,7 +1083,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
             Intent serviceIntent = new Intent(Global.getContext(), ServiceFW.class);
             serviceIntent.putExtra("command", Global.FIREWALL_RESTART); // can we pass app
-            // serviceIntent.putExtra("restart", "app");
             Global.getContext().startService(serviceIntent);
 
         }
@@ -1158,7 +1108,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             public void onClick(DialogInterface dialog, int item) {
                 dialog.cancel();
                 Global.settingsSortOption = item;
-                appRefresh();
+                updateAppListCopy();
                 Logs.myLog("New sort option: " +Global.settingsSortOption,3);
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
                 p.edit().putInt("settingsSortOption", Global.settingsSortOption).apply();
@@ -1217,14 +1167,6 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         appInfo2.addAll(appList2);
         appInfo2.addAll(appList1);
 
-
-        /*
-        Collections.sort(appInfo, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-        */
     }
 
     // Sort accept and deny into two alpha lists
@@ -1262,33 +1204,29 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         appInfo2.addAll(appList2);
 
 
-        /*
-        Collections.sort(appInfo, new Comparator<AppInfo>() {
-            public int compare(AppInfo appInfoA, AppInfo appInfoB) {
-                return appInfoA.name.compareToIgnoreCase(appInfoB.name);
-            }
-        });
-        */
+
     }
 
     private void showNewApps()
     {
+        Logs.myLog("ActivityMain - showNewApps()", 2);
+
+        if ((Global.appListFW == null) || (Global.appListFW.size() == 0) )
+        {
+            return;
+        }
+
         if (dialogNewApps != null)
         {
             // only open one dialog
             return;
         }
 
-        // Cancel the notifications
-        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(200);
-
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 
-        dialogNewApps = new Dialog(myContext);
 
-        final ArrayList appInfoSource = new ArrayList<AppInfo>();
-        AppInfoAdapterNew adapter;
+        final ArrayList newApps = new ArrayList<AppInfo>();
+        AppInfoAdapterNew newAppsAdaptor;
 
         Iterator<Integer> it = Global.appListFW.keySet().iterator();
         while (it.hasNext())
@@ -1296,32 +1234,42 @@ public class ActivityMain extends Activity implements ActivityMainListener{
             int key = it.next();
             AppInfo thisApp = Global.appListFW.get(key);
             if (thisApp.fw == 20) {
-                appInfoSource.add(thisApp);
+                newApps.add(thisApp);
             }
             if (thisApp.fw == 25) { // probably not see this
                 thisApp.fw = 20;
                 p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
-                appInfoSource.add(thisApp);
+                newApps.add(thisApp);
             }
             if (thisApp.fw == 40) {
-                appInfoSource.add(thisApp);
+                newApps.add(thisApp);
             }
             if (thisApp.fw == 45) { // probably not see this
                 thisApp.fw = 40;
                 p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
-                appInfoSource.add(thisApp);
+                newApps.add(thisApp);
             }
-            Logs.myLog("Add GUI app: " + thisApp.name, 3);
         }
 
-        mySort0(appInfoSource);
+        if ( (newApps == null) || (newApps.size() == 0) )
+        {
+            // No new apps
+            Logs.myLog("No new apps!", 2);
+            return;
+        }
 
-        adapter = new AppInfoAdapterNew(myContext, appInfoSource);
-        adapter.updateFull();
-        // notify?
-        // adapter.notifyDataSetChanged();
+        Logs.myLog("New apps = " + newApps.size(), 2);
 
-        setListViewFocus();
+
+        mySort0(newApps);
+
+        // Cancel the notifications
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(200);
+
+        dialogNewApps = new Dialog(myContext);
+
+        newAppsAdaptor = new AppInfoAdapterNew(myContext, newApps);
 
         dialogNewApps.setContentView(R.layout.dialog_records);
 
@@ -1345,17 +1293,21 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
         dialogNewApps.getWindow().setLayout(width, height);
 
-        ListView lv = (ListView) dialogNewApps.findViewById(R.id.recordListView);
+        ListView newAppsListView = (ListView) dialogNewApps.findViewById(R.id.recordListView);
 
-        lv.setAdapter(adapter);
+        newAppsListView.setAdapter(newAppsAdaptor);
 
-        lv.setClickable(true);
+        newAppsListView.setClickable(true);
+
+
 
         dialogNewApps.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+                newAppsAdaptor.clearExpanded();
                 showNewAppsDismiss(p);
             }
+
         });
 
         Button dialogButton = (Button) dialogNewApps.findViewById(R.id.buttonOK);
@@ -1363,6 +1315,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
         dialogButton.setOnClickListener(new View.OnClickListener() {
                 // @Override
                 public void onClick(View v) {
+                    newAppsAdaptor.clearExpanded();
                     showNewAppsDismiss(p);
                 }
             });
@@ -1373,25 +1326,32 @@ public class ActivityMain extends Activity implements ActivityMainListener{
 
     void showNewAppsDismiss (SharedPreferences p)
     {
-        // reset so not new
-        for (int i = 0; i < appInfoSource.size(); i++) {
-            // Printing and display the elements in ArrayList
-            AppInfo thisApp = (AppInfo) appInfoSource.get(i);
+        Logs.myLog("ActivityMain - showNewAppsDismiss()", 2);
 
-            AppInfo app = Global.appListFW.get(thisApp.UID2);
+        // reset app so not new, and not shown again
+        Iterator<Integer>  it = Global.appListFW.keySet().iterator();
+
+        while (it.hasNext())
+        {
+            int key = it.next();
+
+            AppInfo app = Global.appListFW.get(key);
             if (app != null) {
-                if (app.fw == 20) {
+                if ( (app.fw == 20) || (app.fw == 25) ) {
                     // reset so not new
                     app.fw = 10;
-                    p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
+                    p.edit().putInt("FW-" + app.UID2, app.fw).apply();
                 }
-                if (app.fw == 40) {
+                if ( (app.fw == 40) || (app.fw == 45) ){
                     // reset so not new
                     app.fw = 30;
-                    p.edit().putInt("FW-" + thisApp.UID2, thisApp.fw).apply();
+                    p.edit().putInt("FW-" + app.UID2, app.fw).apply();
                 }
             }
         }
+
+
+
         dialogNewApps.dismiss();
         dialogNewApps = null;
     }

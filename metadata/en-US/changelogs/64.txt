@@ -1,0 +1,4 @@
+• Click package name to see details
+• Long press package name to copy name
+• Optimisations
+• Bug fixes

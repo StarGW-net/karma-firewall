@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -37,8 +39,8 @@ public class ActivityLogs extends Activity {
     private class BroadcastListener extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             // Logs.myLog("App Received intent", 2);
-            if (Global.SCREEN_REFRESH_INTENT.equals(intent.getAction())) {
-                Logs.myLog("ActivityLogs Received intent to update screen", 2);
+            if (Global.REBUILD_APPS_DONE.equals(intent.getAction())) {
+                Logs.myLog("ActivityLogs Received REBUILD_APPS_DONE", 2);
                 if (adapter != null) {
                     refreshLogs();
                 }
@@ -64,7 +66,7 @@ public class ActivityLogs extends Activity {
         myContext = this;
 
         Global.getSettings();
-        Logs.getLoggingLevel();
+        Logs.getLoggingLevel();  // gets level + housekeeping
 
         Logs.myLog("ActivityLogs Activity started" , 2);
 
@@ -125,28 +127,6 @@ public class ActivityLogs extends Activity {
             }
         });
 
-        /*
-        TextView title = (TextView) findViewById(R.id.dialogAppsTitle2);
-
-        //
-        // Show debug logs on long press
-        //
-
-        title.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                // Do something here
-                if (!debugLog)
-                {
-                    debugLog = true;
-                } else {
-                    debugLog = false;
-                }
-                refreshLogs();
-                return false;
-            }
-        });
-        */
 
     }
 
@@ -227,136 +207,89 @@ public class ActivityLogs extends Activity {
     }
 
     public void showOptionsMenu(View v) {
-        PopupMenu popup = new PopupMenu(this, v);
-        popup.inflate(R.menu.menu_logs);
-        // getMenuInflater().inflate(R.menu.menu_main, menu);
+        PopupMenu menuLogs = new PopupMenu(this, v);
+        menuLogs.inflate(R.menu.menu_logs);
 
-        final Menu m = popup.getMenu();
+        final Menu m = menuLogs.getMenu();
         MenuItem item;
-        // m.removeItem(m.findItem(R.id.add_queue));
 
-        // Just don't show on any version
-        item = m.findItem(R.id.action_view);
-        item.setVisible(false);
-
+        item = m.findItem(R.id.action_logcat);
+        if (Global.settingsEnableLogcat == true)
+        {
+            item.setChecked(true);
+        } else {
+            item.setChecked(false);
+        }
 
         switch (Global.settingsLoggingLevel) {
             case 0:
-                item = m.findItem(R.id.action_none);
+                item = m.findItem(R.id.action_log_0);
                 item.setChecked(true);
                 break;
             case 1:
-                item = m.findItem(R.id.action_normal);
+                item = m.findItem(R.id.action_log_1);
                 item.setChecked(true);
                 break;
             case 2:
-                item = m.findItem(R.id.action_detailed);
+                item = m.findItem(R.id.action_log_2);
                 item.setChecked(true);
                 break;
             case 3:
-                item = m.findItem(R.id.action_debug);
-                item.setChecked(true);
-                break;
-            case 4:
-                item = m.findItem(R.id.action_insane);
-                item.setChecked(true);
-                break;
-            case 5:
-                item = m.findItem(R.id.action_adb);
+                item = m.findItem(R.id.action_log_3);
                 item.setChecked(true);
                 break;
             default:
+                item = m.findItem(R.id.action_log_4);
+                item.setChecked(true);
                 break;
         }
 
-
-        // item.setChecked(Global.settingsDetailedLogs);
-
-         // popup.getMenu().findItem(R.id.menu_name).setTitle(text);
         invalidateOptionsMenu();
 
+        menuLogs.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-
+            // Handles all, including sub-menu
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+
                 switch (item.getItemId()) {
                     case R.id.action_refresh2:
                         refreshLogs();
                         return true;
                     case R.id.action_share:
-                        // Logs.emailLog();
-                        if (Global.settingsLoggingLevel == 5)
-                        {
-                            Logs.shareLogADB();
-                        } else {
-                            Logs.shareLog();
-                        }
+                        // Logs.shareLog();
+                        Logs.shareLogcat(); // Shares Karma log as well
+                        return true;
+                    case R.id.action_logcat:
+                        enableLogcat();
                         return true;
                     case R.id.action_clear:
                         Logs.clearLog();
                         refreshLogs();
                         return true;
-                    case R.id.action_none:
-                        // change to int
-                        // set
+                    case R.id.action_log_0:
                         Global.settingsLoggingLevel = 0;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_normal:
-                        // change to int
-                        // set
+                    case R.id.action_log_1:
                         Global.settingsLoggingLevel = 1;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_detailed:
-                        // change to int
-                        // set
+                    case R.id.action_log_2:
                         Global.settingsLoggingLevel = 2;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
                         return true;
-                    case R.id.action_debug:
-                        // change to int
-                        // set
+                    case R.id.action_log_3:
                         Global.settingsLoggingLevel = 3;
                         Global.saveSetings();
                         logWarn();
                         refreshLogs();
-                        return true;
-                    case R.id.action_insane:
-                        // change to int
-                        // set
-                        Global.settingsLoggingLevel = 4;
-                        Global.saveSetings();
-                        logWarn();
-                        refreshLogs();
-                        return true;
-                    case R.id.action_adb:
-                        // change to int
-                        // set
-                        Global.settingsLoggingLevel = 5;
-                        Global.saveSetings();
-                        logWarn();
-                        refreshLogs();
-                        return true;
-                    case R.id.action_view:
-                        if (viewBlocked)
-                        {
-                            viewBlocked = false;
-                        } else {
-                            viewBlocked = true;
-                        }
-                        refreshLogs();
-                        return true;
-                    case R.id.action_email:
-                        // copy to clipboard??
                         return true;
                     default:
                         return false;
@@ -364,9 +297,22 @@ public class ActivityLogs extends Activity {
             }
 
         });
-        popup.show();
+        menuLogs.show();
     }
 
+    private void enableLogcat()
+    {
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+
+        if (Global.settingsEnableLogcat == true) {
+            Global.settingsEnableLogcat = false;
+        } else {
+            Global.settingsEnableLogcat = true;
+            // Global.infoMessage(myContext, getString(R.string.dialog_warning), getString(R.string.notify_autofw));
+        }
+        p.edit().putBoolean("settingsEnableLogcat", Global.settingsEnableLogcat).commit();
+
+    }
 
     private void logWarn()
     {
@@ -377,46 +323,6 @@ public class ActivityLogs extends Activity {
                         myContext.getString(R.string.log_level_message1));
     }
 
-    /*
-    //
-    // change the log level
-    //
-    protected void logLevelPickerDropdown()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(myContext);
-
-        final String options[] = myContext.getResources().getStringArray(R.array.logLevels);
-
-        builder.setTitle(myContext.getString(R.string.log_level_set));
-
-        int selected = Logs.getLoggingLevel();
-
-        builder.setSingleChoiceItems(options, selected, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                dialog.cancel();
-                if (( item ) != Logs.getLoggingLevel())
-                {
-                    Logs.setLoggingLevel(item);
-                    warn(item, options[item]);
-                }
-            }});
-
-        builder.show();
-    }
-    */
-
-    /*
-    private void warn(int level, String levelText)
-    {
-        String message = myContext.getString(R.string.log_level_message1);
-        if (level > 1)
-        {
-            message = message + "\n\n" + String.format(myContext.getString(R.string.log_level_message2), levelText);
-        }
-
-        Global.infoMessage(myContext,myContext.getString(R.string.dialog_warning),message);
-    }
-    */
 
     @Override
     protected void onResume() {
@@ -427,7 +333,7 @@ public class ActivityLogs extends Activity {
 
         mReceiver = new BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
+        mIntentFilter.addAction(Global.REBUILD_APPS_DONE);
         registerReceiver(mReceiver, mIntentFilter);
 
         viewBlocked = true;

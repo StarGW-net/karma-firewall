@@ -13,14 +13,14 @@ public class BroadcastReceiverBoot extends BroadcastReceiver {
     @Override
     public void onReceive(Context myContext, Intent intent) {
 
-        Logs.getLoggingLevel();
         Global.getSettings();
+        Logs.getLoggingLevel(); // gets level + housekeeping
 
-        Logs.myLog("BroadcastReceiver Received a Broadcast Intent!", 2);
+        Logs.myLog("BroadcastReceiver - onReceive()", 2);
 
         if ( (intent.getAction() != null))
         {
-            Logs.myLog("Broadcast Receiver Action = " + intent.getAction(),2);
+            Logs.myLog("BroadcastReceiver - Action = " + intent.getAction(),2);
             if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED"))
             {
                 if (Global.settingsEnableBoot)
@@ -35,16 +35,7 @@ public class BroadcastReceiverBoot extends BroadcastReceiver {
             }
         }
 
-
-
-
-
     }
 
-    private static void refreshAppBroadcast(Context myContext) {
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(Global.APPS_REFRESH_INTENT );
-        myContext.sendBroadcast(broadcastIntent);
-    }
 
 }

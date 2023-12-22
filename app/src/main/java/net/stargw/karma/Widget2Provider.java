@@ -16,16 +16,10 @@ import android.widget.RemoteViews;
 import static net.stargw.karma.Global.getContext;
 
 public class Widget2Provider extends AppWidgetProvider {
-
-    PackageManager pManager;
-
-
-    Context myContext;
-    int myView;
-
+    
 
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // Log.w("KarmaWidget2","onUpdate");
+        Logs.myLog("Widget2 - onUpdate()",4);
         // We update manually
     }
 
@@ -37,21 +31,26 @@ public class Widget2Provider extends AppWidgetProvider {
 
     public void updateGUIAll(Context context)
     {
+        Logs.myLog("Widget2 - updateGUIAll()", 4);
+
         // Update all the widgets - we need to do this in case two
         // widgets have the same app on them
         // Loop through all Widgets of this class - updating
         AppWidgetManager man = AppWidgetManager.getInstance(context);
         int[] ids = man.getAppWidgetIds(
                 new ComponentName(context, Widget2Provider.class));
+        Logs.myLog("Widget2 - updateGUIAll() - Number of Widgets = " + ids.length,4);
+
         for (int i = 0; i < ids.length; i++) {
-            // Log.w("KarmaWidget2", "Updating Widget: " + ids[i]);
+            Logs.myLog("Widget2 - updateGUIAll () - Updating Widget: " + ids[i],4);
+
             updateGUI(context, ids[i]);
         }
     }
 
     public void updateGUI(Context context, int appWidgetId)
     {
-        // Log.w("KarmaWidget2",  "updateGUI - Widget ID = " + appWidgetId + " update the display");
+        Logs.myLog("Widget2 - updateGUI() - Widget ID = " + appWidgetId,4);
 
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
 
@@ -75,7 +74,8 @@ public class Widget2Provider extends AppWidgetProvider {
         {
             // Means we have no record of the Widget
             // Not sure we would ever get here
-            // Log.w("KarmaWidget2","[a] Could not get UID of app!");
+            Logs.myLog("Widget2 - updateGUI() - [a] Could not get UID of app!",4);
+
             views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getContext().getResources().getDrawable(R.drawable.alert)));
             views.setViewVisibility(R.id.widgit2_deny, View.INVISIBLE);
             views.setViewVisibility(R.id.widgit2_allow, View.INVISIBLE);
@@ -89,7 +89,8 @@ public class Widget2Provider extends AppWidgetProvider {
         if (state == -1)
         {
             // Widget exists but app has been deleted
-            // Log.w("KarmaWidget2","[a] App no longer exists: " + uid);
+            Logs.myLog("Widget2 - updateGUI() - [a] App no longer exists: " + uid,4);
+
             views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getContext().getResources().getDrawable(R.drawable.alert)));
             views.setViewVisibility(R.id.widgit2_deny, View.INVISIBLE);
             views.setViewVisibility(R.id.widgit2_allow, View.INVISIBLE);
@@ -99,7 +100,10 @@ public class Widget2Provider extends AppWidgetProvider {
             return;
         }
 
-        views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon2(uid)));    // <--- do not have icon list
+        // May not have icon in App list yet list
+        views.setImageViewBitmap(R.id.widgit2_icon, Global.drawableToBitmap(getIcon2(uid)));
+
+
 
         if (state >= 30) {
             views.setViewVisibility(R.id.widgit2_deny, View.VISIBLE);
@@ -147,53 +151,54 @@ public class Widget2Provider extends AppWidgetProvider {
     {
         super.onReceive(context, intent);
 
-        // Log.w("KarmaWidget2","onReceive");
+        Logs.myLog("Widget2 - onReceive()",4);
 
         if ((intent.getAction() != null)) {
-            // Log.w("KarmaWidget2", "Widget Action = " + intent.getAction());
+            Logs.myLog("Widget2 - onReceive() - Action = " + intent.getAction(),4);
         } else {
-            // Log.w("KarmaWidget2", "Widget No Action, doing nothing!");
+            Logs.myLog("Widget2 - onReceive() - No Action, doing nothing!",4);
             return;
         }
 
-        // Need to check that apps still exist?
-        int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
-
-        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            // Log.w("KarmaWidget2", "No Widget ID");
-            if ((intent.getAction() != null) && (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE))) {
-                // Log.w("KarmaWidget2", "Non specific update so ok");
-            } else {
-                // Log.w("KarmaWidget2", "Cannot proceed without Widget ID");
-            }
-        }
 
         // Receive update from the service - update icon - may just set to not firewalled...
         if ((intent.getAction() != null) && (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(intent.getAction())))
         {
             String action = intent.getStringExtra(Global.WIDGET_ACTION);
-            // Log.w("KarmaWidget2", "Widget Action = " + action);
+            Logs.myLog("Widget2 - onReceive() - getStringExtra: " + action,4);
 
+            updateGUIAll(context);
+            /*
             if ( (action!= null) && (action.equals("ALL")) ) {
                 updateGUIAll(context);
             }
+            */
 
         }
 
+        // These come direct from Intents, not Broadcasts
         if ( (intent.getAction() != null) && (intent.getAction().equals(Global.TOGGLEAPP))) {
-            // Log.w("KarmaWidget2", "Action TOGGLEAPP");
+            Logs.myLog("Widget2 - onReceive() - Action TOGGLEAPP",4);
             // Loop through all Widgets of this class - toggling?
             // do we need to - if two of same app widgets!
 
             SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+
+            // Need to check that apps still exist?
+            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+
+            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                Logs.myLog("Widget2 - onReceive() - Cannot proceed without Widget ID",4);
+            }
 
             int uid = p.getInt("W-" + appWidgetId,-1);
 
             if (uid == -1) {
                 // Means we have no record of the Widget
                 // Not sure we would ever get here
-                // Log.w("KarmaWidget2", "[b] Could not get UID of app!");
+                Logs.myLog("Widget2 - onReceive() - [b] Could not get UID of app!",4);
+
                 updateGUIAll(context);
                 return;
             }
@@ -203,7 +208,8 @@ public class Widget2Provider extends AppWidgetProvider {
             if (state == -1)
             {
                 // Widget exists but app has been deleted
-                // Log.w("KarmaWidget2","[b] App no longer exists: " + uid);
+                Logs.myLog("Widget2 - onReceive() - [b] App no longer exists: " + uid,4);
+
                 updateGUIAll(context);
                 return;
             }
@@ -213,8 +219,10 @@ public class Widget2Provider extends AppWidgetProvider {
                 // And update the list held in memory
                 AppInfo app = Global.appListFW.get(uid);
                 if (app != null) {
-                    // Log.w("KarmaWidget2", "Toggle App: " + app.name);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,4);
                     app.fw = 10;
+                } else {
+                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",4);
                 }
             } else {
                 // Write to the file
@@ -222,8 +230,10 @@ public class Widget2Provider extends AppWidgetProvider {
                 // And update the list held in memory
                 AppInfo app = Global.appListFW.get(uid);
                 if (app != null) {
-                    // Log.w("KarmaWidget2", "Toggle App: " + app.name);
+                    Logs.myLog("Widget2 - onReceive() - Toggle App: " + app.name,4);
                     app.fw = 30;
+                } else {
+                    Logs.myLog("Widget2 - onReceive() - Toggle App - AppList Not Available!",4);
                 }
             }
 
@@ -243,11 +253,21 @@ public class Widget2Provider extends AppWidgetProvider {
     private Drawable getIcon2(int uid)
     {
 
+        if (Global.appListFW != null) {
+            AppInfo app = Global.appListFW.get(uid);
+            if (app != null) {
+                return app.icon;
+            }
+        }
 
         Drawable icon;
 
         PackageManager pm = Global.getContext().getPackageManager();
         String packageName = pm.getNameForUid(uid);
+
+        // Huh claims Firefox packageName is: org.mozilla.firefox.sharedID
+        // But I cannot find any other app that shares the same UID
+        // So this is not great
 
         PackageManager pManager = Global.getContext().getPackageManager();
 
@@ -255,7 +275,7 @@ public class Widget2Provider extends AppWidgetProvider {
             icon = pManager.getApplicationIcon(packageName);
         } catch (Exception e) {
             icon = getContext().getResources().getDrawable(R.drawable.android);
-            Logs.myLog("Cannot get icon!", 3);
+            Logs.myLog("Widget2 - onReceive() - Cannot get icon for : " + packageName + " - UID: " + uid,4);
         }
 
         return icon;

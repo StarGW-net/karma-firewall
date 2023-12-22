@@ -23,9 +23,9 @@ import androidx.core.content.FileProvider;
 
 public class Logs {
 
-	// private static String logBuffer = ""; // put time in here
+	static final String FILE_LOG = "Karma-FW-log.txt";
+	static final String FILE_LOGCAT = "Karma-FW-logcat.txt";
 	
-	// private static int LoggingLevel = 0;
 	private static final String TAG = "KarmaLog";
 	private static FileOutputStream logFile = null;
 	
@@ -36,7 +36,7 @@ public class Logs {
 
 	public static File getLogFile()
 	{
-		File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 		
 		return file;
 	}
@@ -45,7 +45,7 @@ public class Logs {
 	{
 		ArrayList<String> logBuffer = new ArrayList<String>();
 		
-		File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -78,7 +78,7 @@ public class Logs {
 			Log.w(TAG, time.format("%H:%M:%S") + ": Error closing log file");
 		}
 		
-		File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 		
 		byte[] buffer = null;
 		FileInputStream is;
@@ -98,7 +98,7 @@ public class Logs {
 		try {
 			logFile = new FileOutputStream(file, true);
 		} catch (Exception e) {
-			Log.w(TAG, time.format("%H:%M:%S") + ": Error appending to log file: " + file.getAbsolutePath());
+			Log.w(TAG, time.format("%H:%M:%S") + ": Error appending to log file: " + file.getAbsolutePath() + " - " + e);
 		}
 		
 		return new String(buffer);
@@ -124,7 +124,7 @@ public class Logs {
 			Time time = new Time(Time.getCurrentTimezone());
 			time.setToNow();
 
-			File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+			File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 
 			try {
 				// file.createNewFile();
@@ -138,7 +138,8 @@ public class Logs {
 				// byte[] data = logBuffer.getBytes();
 				// logFile.write(data);
 			} catch (Exception e) {
-				Log.w(TAG, time.format("%H:%M:%S") + ": Error creating log file: " + file.getAbsolutePath());
+				Log.w(TAG, time.format("%H:%M:%S") + ": Error creating log file: " + file.getAbsolutePath() + " : " + e);
+				// e.printStackTrace();
 			}
 		}
 		return Global.settingsLoggingLevel;
@@ -148,9 +149,9 @@ public class Logs {
 
 	public static void checkLogSize()
 	{
-		File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 
-		if (file.length() > 1000000)
+		if (file.length() > 5000000)
 		{
 			clearLog();
 			Logs.myLog("Log file too big. Reset.", 1);
@@ -164,12 +165,12 @@ public class Logs {
 		Time time = new Time(Time.getCurrentTimezone());
 		time.setToNow();
 		
-		File file = new File(Global.getContext().getFilesDir(), Global.LOG_FILE);
+		File file = new File(Global.getContext().getFilesDir(), FILE_LOG);
 		
 		try {
 			logFile.close();
 		} catch (Exception e) {
-			Log.w(TAG, time.format("%H:%M:%S") + ": Error closing log file");
+			Log.w(TAG, time.format("%H:%M:%S") + ": Error closing log file: " + e);
 		}
 		
 		try {
@@ -183,21 +184,22 @@ public class Logs {
 			logFile.write(data);
 			*/
 		} catch (Exception e) {
-			Log.w(TAG, time.format("%H:%M:%S") + ": Error creating log file: " + file.getAbsolutePath());
+			Log.w(TAG, time.format("%H:%M:%S") + ": Error creating log file: " + file.getAbsolutePath()+ " - " + e);
+			// e.printStackTrace();
 		}
 	}
 
 	// share log
 	public static void shareLog()
 	{
-		File f = new File(Global.getContext().getFilesDir(),Global.LOG_FILE);
+		File f = new File(Global.getContext().getFilesDir(),FILE_LOG);
 
-		myLog("READ PATH = " + f.toString(),3);
+		myLog("Log Path = " + f.toString(),3);
 
 		// This provides a read only content:// for other apps
 		Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.karma.fileprovider",f);
 
-		myLog("URI PATH = " + uri2.toString(),3);
+		myLog("URI Path = " + uri2.toString(),3);
 
 		Intent intent2 = new Intent(Intent.ACTION_SEND);
 		intent2.putExtra(Intent.EXTRA_STREAM, uri2);
@@ -208,19 +210,37 @@ public class Logs {
 
 	}
 
-	public static void shareLogADB()
+	public static void shareLogcat()
 	{
+		Time time = new Time(Time.getCurrentTimezone());
+		time.setToNow();
+
 		File myDirPath = new File(Global.getContext().getCacheDir(), "temp");
 		myDirPath.mkdirs();
 
-		File file = new File(myDirPath, Global.LOG_FILE);
+		File file = new File(myDirPath, FILE_LOGCAT);
+
+		File log = new File(Global.getContext().getFilesDir(),FILE_LOG);
+
+
+		try {
+			copy(log, file);
+		} catch (IOException e) {
+			Log.w(TAG, time.format("%H:%M:%S") + ": Error coping log file: " + e );
+			// e.printStackTrace();
+			Logs.myLog("Cannot share log file: " + e,1);
+		}
+
+		myLog("Logcat Path = " + file.toString(),3);
 
 		FileOutputStream fos;
 		try {
-			fos = new FileOutputStream(file);
+			fos = new FileOutputStream(file, true); // append
+			fos.write("\n\n=======RAW ANDROID LOGCAT BELOW======\n\n".getBytes() );
 		} catch (IOException e) {
 			// Toast.makeText(Global.getContext(), "Error Exporting to file!", Toast.LENGTH_SHORT).show();
-			Logs.myLog("Error getting ADB log" + e.toString(),2);
+			Logs.myLog("Error appending to logcat: " + e,2);
+			Logs.myLog("Cannot share log file: " + e,1);
 			return;
 		}
 
@@ -236,9 +256,15 @@ public class Logs {
 				fos.write(line.getBytes() );
 			}
 			fos.close();
-		} catch (IOException e) {
-			Logs.myLog("Error getting ADB log" + e.toString(),2);
-			return;
+		} catch (Exception e) {
+			Logs.myLog("Error running exec to get logcat: " + e,2);
+			try {
+				fos.write(("Error running exec to get logcat: " + e).getBytes());
+			} catch (Exception e2) {
+
+			}
+			// return;
+			// continue
 		}
 
 		// This provides a read only content:// for other apps
@@ -273,11 +299,12 @@ public class Logs {
 	//
 	public static void myLog(String buf,int level)
 	{
-		// Log.w(TAG, "STEVE LOG = " + level + " : " + Global.settingsLoggingLevel);
+		// Log.w(TAG, "LOG = " + level + " : " + Global.settingsLoggingLevel);
+
 
 		if (level <= Global.settingsLoggingLevel)
 		{
-			// Log.w(TAG, "STEVE LOG = " + level + " : " + Global.settingsLoggingLevel + " " + buf);
+			// Log.w(TAG, "LOG = " + level + " : " + Global.settingsLoggingLevel + " " + buf);
 
 			Calendar today = new GregorianCalendar();
 			SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss EEE dd/MM/yyyy");
@@ -291,7 +318,7 @@ public class Logs {
 				byte[] data = logBuffer.getBytes(); 
 				try {
 					logFile.write(data);
-					if (Global.settingsLoggingLevel > 3) { // STEVE
+					if (Global.settingsEnableLogcat == true) {
 						Log.w(TAG, buf);
 					}
 				} catch (Exception e) {
