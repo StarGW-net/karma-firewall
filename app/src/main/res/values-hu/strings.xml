@@ -13,7 +13,7 @@
 	<string name="activity_main_menu_logs">Napló megnézése</string>
 	<string name="activity_main_menu_stats">Adat használat megnézése</string>
 	<string name="activity_main_menu_help">Súgó</string>
-	<string name="activity_main_menu_donate">Adományoz</string>
+	<string name="activity_main_menu_donate">Adományozás</string>
 
 
 	<string name="activity_main_menu_refresh">Alkalmazások frissítése</string>
