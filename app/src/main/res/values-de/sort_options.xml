@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Apps A-Z</item>
+        <item>Erlaubte Apps A-Z</item>
+        <item>Gesperrte Apps A-Z</item>
+        <item>Apps nach letzten Daten</item>
+        <item>Erlaube Apps nach letzten Daten</item>
+        <item>Sperre Apps nach letzten Daten</item>
+    </string-array>
+
+    <string-array name="sortOptionsNew">
+        <item>Apps A-Z</item>
+        <item>Erlaubte Apps A-Z</item>
+        <item>Gesperrte Apps A-Z</item>
+    </string-array>
+</resources>
