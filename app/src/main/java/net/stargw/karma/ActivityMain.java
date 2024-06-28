@@ -358,7 +358,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                             info.setTitle(R.string.activity_main_menu_boot);
 
                             TextView text = (TextView) info.findViewById(R.id.infoMessage);
-                            text.setText("You may also need to enable Always-on VPN in Android settings...");
+                            text.setText(R.string.dialog_enable_boot_info);
                             // text.setGravity(i);
 
                             Button dialogButton = (Button) info.findViewById(R.id.infoButton);
@@ -385,7 +385,7 @@ public class ActivityMain extends Activity implements ActivityMainListener{
                         info.setTitle(R.string.activity_main_menu_always);
 
                         TextView text = (TextView) info.findViewById(R.id.infoMessage);
-                        text.setText("Please enable Always-on VPN in Android settings...");
+                        text.setText(R.string.dialog_enable_always_on_info);
                         // text.setGravity(i);
 
                         Button dialogButton = (Button) info.findViewById(R.id.infoButton);
