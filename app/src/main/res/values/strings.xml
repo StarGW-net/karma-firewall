@@ -99,6 +99,8 @@
 
     <string name="BuildingApps">Building App List</string>
     <string name="InfoLoadingApps">Only apps with Internet access will be displayed</string>
+    <string name="dialog_enable_always_on_info">Please enable Always-on VPN in Android settings...</string>
+    <string name="dialog_enable_boot_info">You may also need to enable Always-on VPN in Android settings...</string>
 
 
     <string-array name="number_array">
