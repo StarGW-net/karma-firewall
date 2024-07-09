@@ -279,10 +279,9 @@ public class Global extends Application {
 			int key = it.next();
 			AppInfo app = Global.appListFW.get(key);
 			app.flush = true;
+			app.enabled = false; // reset
 			// app.expandView = false;
 			// app.appInfoExtra = null; // these may have changed...
-			// this will double up...
-			// app.appInfoExtra = new ArrayList<AppInfoExtra>();
 		}
 
 		PackageInfo packageInfo;

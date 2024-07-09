@@ -10,7 +10,7 @@ Karma FW is completely different from all other VPN Firewalls. Karma FW requires
 
 Please do not send any requests for customisation that would require Karma Firewall to inspect a users traffic. We leave that to all the other Android Firewalls.
 
-After a number of years I have stopped releasing Karma Firewall on Google Play and have now moved Karma Firewall to F-Droid.
+After a number of years I have stopped releasing Karma Firewall on Google Play and have now moved Karma Firewall to F-Droid and GitHub.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"

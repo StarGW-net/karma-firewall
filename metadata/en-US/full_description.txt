@@ -2,5 +2,5 @@ Karma Firewall app lets you take control back of your phone and block internet t
 
 Ever wondered why lots of apps that have no need for Internet access require Internet Permissions? Its usually either to display adverts or send your sensitive data back to servers in USA, China or Russia. Karma Firewall can block this traffic and protect your personal data. You do not need any technical skills to use, no complicated IP Addressing, Ports, Packet Filtering etc. Simply select the apps you want to block, and you are protected.
 
-Karma Firewall is the safest, most trusted Android Firewall. Karma FW is completely different from all other VPN Firewalls. Karma FW requires NO Internet permissions. Without permissions CANNOT send any data anywhere. We intercept no allowed traffic.
+Karma Firewall is the safest, most trusted Android Firewall. Karma FW is completely different from all other VPN Firewalls. We intercept no allowed traffic. Karma FW requires NO Internet permissions. Without Internet permissions Karma FW CANNOT steal your data and send it anywhere. 
 
