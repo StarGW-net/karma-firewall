@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOptions">
+        <item>Applications A-Z</item>
+        <item>Applications autorisées A-Z</item>
+        <item>Applications bloquées A-Z</item>
+        <item>Applications par dernière donnée</item>
+        <item>Applications autorisées par dernière donnée</item>
+        <item>Applications bloquées par dernière donnée</item>
+    </string-array>
+
+    <string-array name="sortOptionsNew">
+        <item>Applications A-Z</item>
+        <item>Applications autorisées A-Z</item>
+        <item>Applications bloquées A-Z</item>
+    </string-array>
+</resources>
