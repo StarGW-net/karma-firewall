@@ -1,0 +1,110 @@
+<resources>
+
+    <string name="fileFormat">yyyy-MM-dd</string>
+
+    <string name="activity_main_menu_title">Applications dans le pare-feu</string>
+
+    <string name="activity_main_menu_apps_system">Afficher les applications système</string>
+    <string name="activity_main_menu_apps_toggle">Autoriser/Bloquer tout</string>
+    <string name="activity_main_menu_apps_user">Afficher les applications utilisateur</string>
+    <string name="activity_main_menu_apps_sort">Trier</string>
+
+    <string name="activity_main_menu_zero">Réinitialiser les statistiques</string>
+    <string name="activity_main_menu_notifications">Notifications</string>
+    <string name="activity_main_menu_boot">Pare-feu au démarrage</string>
+    <string name="activity_main_menu_restart">Redémarrage du pare-feu</string>
+    <string name="activity_main_menu_subnet">Réseau local :&#160;</string>
+    <string name="activity_main_menu_logs">Afficher les logs</string>
+    <string name="activity_main_menu_stats">Afficher l'utilisation des données</string>
+    <string name="activity_main_menu_autofw">Pare-feu pour nouvelles applications</string>
+    <string name="activity_main_menu_help">Aide</string>
+    <string name="activity_main_menu_donate">Faire un don</string>
+    <string name="activity_main_menu_refresh">Rafraîchir les applications</string>
+    <string name="activity_main_menu_always">Toujours activé...</string>
+
+    <string name="activity_logs_menu_traffic_logs">Logs de trafic</string>
+    <string name="activity_logs_menu_view_blocked">Voir les bloqués</string>
+    <string name="activity_logs_menu_view_allowed">Voir les autorisés</string>
+    <string name="activity_logs_menu_clear_logs">Effacer les logs</string>
+    <string name="activity_logs_menu_detailed">Logs détaillés</string>
+    <string name="activity_logs_menu_copy_logs">Copier les logs</string>
+    <string name="activity_logs_menu_share_logs">Partager les logs</string>
+    <string name="activity_logs_menu_share_logcat">Partager Logcat</string>
+    <string name="activity_logs_menu_log_level">Définir le niveau de logs</string>
+    <string name="activity_logs_menu_refresh">Rafraîchir</string>
+
+    <string name="log_level_set">Sélectionnez le niveau de logs</string>
+    <string name="log_level_message1">Le nouveau niveau de logs prendra effet dès maintenant.</string>
+    <string name="log_level_message2" formatted="false">Définir le niveau de logs sur %s générera beaucoup de logs et diminuera les performances.</string>
+  
+    <string name="sort_option_set">Sélectionnez l'option de tri</string>
+
+    <string name="dialog_warning">Attention !</string>
+    <string name="dialog_info">Info !</string>
+    <string name="dialog_blockAll">Tout bloquer</string>
+    <string name="dialog_allowAll">Tout autoriser</string>
+    <string name="dialog_toggleAll">Autoriser/Bloquer toutes les applications</string>
+    <string name="dialog_toggleAll_message">Pour bloquer ou autoriser toutes les applications utilisateur, sélectionnez le bouton approprié ci-dessous.</string>
+    <string name="dialog_toggleAll_message_system">Pour bloquer ou autoriser toutes les applications système, sélectionnez le bouton approprié ci-dessous.</string>
+    <string name="dialog_subnet">Autoriser un sous-réseau local</string>
+    <string name="dialog_subnet_message">Pour autoriser le trafic vers un sous-réseau, même à partir d'applications bloquées, entrez le sous-réseau ci-dessous :</string>
+    <string name="dialog_subnet_message2">(Ceci est conçu pour un sous-réseau local de confiance. Si vous ne savez pas ce que vous faites, n'activez pas cette option et appuyez sur Effacer pour quitter !)</string>
+    <string name="dialog_allow">Autoriser</string>
+    <string name="dialog_clear">Effacer</string>
+
+    <string name="filter_text">Entrez le texte à filtrer</string>
+
+    <string name="apps_loading">Chargement des informations des applications %d\n\n(Seules les applications ayant accès à Internet seront affichées)</string>
+    <string name="app_disabled">L'application est désactivée ! Activez-la pour voir les informations de l'application.</string>
+    <string name="app_unknown">Impossible de trouver l'application !</string>
+
+    <string name="enable_firewall">Activer le pare-feu</string>
+    <string name="enable_firewall_message">Cela activera le pare-feu et refusera l'accès à Internet aux applications que vous avez spécifiées.\n\nContinuer ?</string>
+
+    <string name="disable_firewall">Désactiver le pare-feu</string>
+    <string name="disable_firewall_message">Cela désactivera le pare-feu. Toutes les applications pourront accéder à Internet.\n\nContinuer ?</string>
+
+    <string name="firewall_start_part1">Pare-feu désactivé. Appuyez sur</string>
+    <string name="firewall_start_part2">pour l'activer.</string>
+
+    <string name="notfity_deny" formatted="false">Données de %s bloquées</string>
+    <string name="notfity_blocked">Données bloquées par le pare-feu</string>
+    <string name="notify_firewall_start">Pare-feu activé</string>
+    <string name="notify_firewall_fail1">Impossible de démarrer le pare-feu ! Veuillez réessayer...</string>
+    <string name="notify_firewall_fail2" formatted="false">Impossible de démarrer le pare-feu : %s</string>
+    <string name="notify_firewall_fail3">Impossible de démarrer le pare-feu au démarrage ! Démarrez manuellement...</string>
+    <string name="notify_firewall_fail4">Impossible de redémarrer le pare-feu après l'arrêt ! Démarrez manuellement...</string>
+    <string name="notify_firewall_stopped">Pare-feu désactivé !</string>
+    <string name="notify_firewall_terminated">Pare-feu arrêté ! Activez "Redémarrage du pare-feu" dans les options pour un redémarrage automatique.</string>
+    <string name="notify_firewall_restart">Pare-feu arrêté ! Mais redémarrage en cours. Cela empêche tout autre pare-feu ou VPN de fonctionner sur votre téléphone. Pour arrêter ce comportement, désactivez "Redémarrage du pare-feu" dans les options.</string>
+    <string name="notify_firewall_block_all">Votre version d'Android ne prend pas en charge le blocage par application.\n\nBlocage de toutes les applications !</string>
+    <string name="notify_autofw">Nouvelle fonctionnalité expérimentale.\n\nKarma détectera PÉRIODIQUEMENT les nouvelles applications en arrière-plan. Sélectionnez cette option si vous souhaitez que ces applications soient filtrées dès qu'elles sont détectées.\n\nCe n'est pas instantané, il peut donc y avoir un court laps de temps où ces applications ne seront PAS filtrées.</string>
+
+    <string name="app_data_boot" formatted="false">Données depuis le démarrage :</string>
+    <string name="app_data_boot_up" formatted="false">%s</string>
+    <string name="app_data_boot_down" formatted="false">%s</string>
+
+    <string name="app_data_date_string0">Pare-feu inactif</string>
+    <string name="app_data_date_string1">Aucune donnée depuis l'activation du pare-feu</string>
+    <string name="app_data_date_string2">Aucune donnée depuis le changement de règle</string>
+    <string name="app_data_date_string3">Données :</string>
+    <string name="app_data_date_string4">Données bloquées :</string>
+    <string name="app_data_date_string5">Données locales :</string>
+    <string name="app_data_date_string6">Android 10 : Voir l'utilisation des données</string>
+    <string name="LoadingApps">Chargement de la liste des applications</string>
+    <string name="blocked">Bloqué :</string>
+    <string name="allowed">Autorisé :</string>
+    <string name="cleared">Log effacé</string>
+    <string name="timeFormat">%a %d %b %H:%M</string>
+
+    <string name="BuildingApps">Construction de la liste des applications</string>
+    <string name="InfoLoadingApps">Seules les applications ayant accès à Internet seront affichées</string>
+    <string name="dialog_enable_always_on_info">Veuillez activer l'option "VPN toujours activé" dans les paramètres Android...</string>
+    <string name="dialog_enable_boot_info">Vous devrez peut-être aussi activer l'option "VPN toujours activé" dans les paramètres Android...</string>
+
+
+    <string-array name="number_array">
+        <item>255</item>
+        <item>0</item>
+    </string-array>
+</resources>
