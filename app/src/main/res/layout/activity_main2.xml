@@ -98,18 +98,18 @@
             android:orientation="horizontal"
             android:layout_marginRight="0dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FF0000"
-            android:text="@string/firewall_start_part1"
-            android:textSize="16sp"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:visibility="visible"
-            android:gravity="center_horizontal">
-        </TextView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="10dp"
+                android:gravity="center_horizontal"
+                android:singleLine="true"
+                android:text="@string/firewall_start_part1"
+                android:textColor="#FF0000"
+                android:textSize="16sp"
+                android:visibility="visible"></TextView>
 
         <ImageView
             android:layout_width="24dp"
@@ -118,18 +118,18 @@
             android:layout_gravity="bottom"
             android:tint="#ff0000" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FF0000"
-            android:text="@string/firewall_start_part2"
-            android:textSize="16sp"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:visibility="visible"
-            android:gravity="center_horizontal">
-        </TextView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="10dp"
+                android:gravity="center_horizontal"
+                android:singleLine="true"
+                android:text="@string/firewall_start_part2"
+                android:textColor="#FF0000"
+                android:textSize="16sp"
+                android:visibility="visible"></TextView>
 
     </LinearLayout>
     </LinearLayout>
